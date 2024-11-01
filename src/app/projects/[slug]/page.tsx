@@ -1,51 +1,76 @@
 // src/app/projects/[slug]/page.tsx
-import { getBlogPost, formatDate } from '@/utils/blogUtils';
+import fs from 'fs';
+import path from 'path';
 import { compileMDX } from 'next-mdx-remote/rsc';
-import Image from 'next/image';
+import { mdxComponents } from '@/mdx-components';
 import { notFound } from 'next/navigation';
+import Image from 'next/image';
+import { formatDate } from '@/utils/blogUtils';
 
-interface PageProps {
-  params: {
-    slug: string;
-  };
+export async function generateStaticParams() {
+  const postsDirectory = path.join(process.cwd(), 'content', 'projects');
+  const filenames = fs.readdirSync(postsDirectory);
+
+  return filenames.map((filename) => ({
+    slug: filename.replace(/\.mdx?$/, ''),
+  }));
 }
 
-export default async function ProjectPostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params; // Await params here
-  const post = await getBlogPost(slug, 'projects');
+interface Metadata {
+  title: string;
+  date: string;
+  description: string;
+  author: {
+    name: string;
+    image: string;
+  };
+  tags: string[];
+  readingTime: string;
+}
 
-  if (!post) {
+export default async function ProjectsPostPage(props: { params: { slug: string } }) {
+  const params = await props.params;
+  const { slug } = params;
+
+  const postFilePath = path.join(process.cwd(), 'content', 'projects', `${slug}.mdx`);
+
+  if (!fs.existsSync(postFilePath)) {
     notFound();
   }
 
-  const { content } = await compileMDX({
-    source: post.content,
-    options: { parseFrontmatter: true }
+  const source = fs.readFileSync(postFilePath, 'utf8');
+
+  const { content, frontmatter } = await compileMDX<Metadata>({
+    source,
+    components: mdxComponents,
+    options: { parseFrontmatter: true },
   });
+
+  const metadata = frontmatter;
 
   return (
     <article className="max-w-4xl mx-auto px-4 py-20">
-      {/* Post Header */}
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-4">{post.title}</h1>
+        <h1 className="text-4xl font-bold mb-4">{metadata.title}</h1>
         <div className="flex items-center mb-6">
           <div className="relative w-10 h-10 mr-3">
             <Image
-              src={post.author.image}
-              alt={post.author.name}
-              fill
+              src={metadata.author.image}
+              alt={metadata.author.name}
+              width={40}
+              height={40}
               className="rounded-full object-cover"
             />
           </div>
           <div>
-            <div className="font-medium">{post.author.name}</div>
+            <div className="font-medium">{metadata.author.name}</div>
             <div className="text-sm text-gray-500">
-              {formatDate(post.date)} · {post.readingTime}
+              {formatDate(metadata.date)} · {metadata.readingTime}
             </div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mb-8">
-          {post.tags && post.tags.map((tag: string) => (
+          {metadata.tags?.map((tag: string) => (
             <span
               key={tag}
               className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
@@ -55,8 +80,7 @@ export default async function ProjectPostPage({ params }: { params: Promise<{ sl
           ))}
         </div>
       </header>
-      {/* Post Content */}
-      <div className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-a:text-blue-600">
+      <div className="prose prose-lg max-w-none">
         {content}
       </div>
     </article>

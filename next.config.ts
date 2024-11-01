@@ -1,11 +1,12 @@
-import type { NextConfig } from "next";
+// next.config.ts
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   eslint: {
-    // This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  transpilePackages: ['next-mdx-remote'],
 };
 
 export default nextConfig;

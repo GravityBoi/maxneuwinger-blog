@@ -1,6 +1,8 @@
 // src/types/blog.ts
 
-export type PostCategory = 'projects' | 'writing' | 'meditation' | undefined;
+export type Category = 'projects' | 'writing' | 'meditation';
+export type PostCategory = Category | undefined;
+
 
 export interface BlogPost {
   slug: string;
