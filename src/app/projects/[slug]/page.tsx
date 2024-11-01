@@ -28,10 +28,11 @@ interface Metadata {
   readingTime: string;
 }
 
-export default async function ProjectsPostPage(props: { params: { slug: string } }) {
-  const params = await props.params;
-  const { slug } = params;
+type Params = Promise<{ slug: string }>;
 
+export default async function ProjectsPostPage({ params }: { params: Params }) {
+  const { slug } = await params;
+  
   const postFilePath = path.join(process.cwd(), 'content', 'projects', `${slug}.mdx`);
 
   if (!fs.existsSync(postFilePath)) {

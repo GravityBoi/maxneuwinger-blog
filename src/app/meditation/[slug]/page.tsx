@@ -28,9 +28,10 @@ interface Metadata {
   readingTime: string;
 }
 
-export default async function MeditationPostPage(props: { params: { slug: string } }) {
-  const params = await props.params;
-  const { slug } = params;
+type Params = Promise<{ slug: string }>;
+
+export default async function MeditationPostPage({ params }: { params: Params }) {
+  const { slug } = await params;
 
   const postFilePath = path.join(process.cwd(), 'content', 'meditation', `${slug}.mdx`);
 
