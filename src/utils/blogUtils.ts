@@ -31,48 +31,50 @@ export function getBlogPosts(category?: PostCategory): BlogListItem[] {
     // Then get files from each category directory
     const categories: PostCategory[] = ['projects', 'writing', 'meditation'];
     categories.forEach(cat => {
-      const catPath = path.join(postsDirectory, cat);
+      const catPath = path.join(postsDirectory, cat as string);
       if (fs.existsSync(catPath)) {
         const catFiles = fs.readdirSync(catPath)
           .filter(name => name.endsWith('.mdx'))
-          .map(name => path.join(cat, name));
+          .map(name => path.join(cat as string, name));
         fileNames.push(...catFiles);
       }
     });
   }
 
-  const allPostsData = fileNames.map((fileName) => {
+  const allPostsData: BlogListItem[] = fileNames.map((fileName) => {
     try {
       const fullPath = path.join(postsDirectory, fileName);
       const fileContents = fs.readFileSync(fullPath, 'utf8');
       const matterResult = matter(fileContents);
-
+  
       // Extract category from path if it exists
       const pathParts = fileName.split(path.sep);
-      const fileCategory = pathParts.length > 1 ? pathParts[0] as PostCategory : undefined;
+      const fileCategory: PostCategory | undefined = fullPath.includes(category!) ? category : undefined;
       
       // Get slug without category prefix
       const slug = pathParts[pathParts.length - 1].replace(/\.mdx$/, '');
-
+  
       const wordCount = matterResult.content.split(/\s+/g).length;
       const readingTime = `${Math.ceil(wordCount / 200)} min read`;
-
-      return {
+  
+      const post: BlogListItem = {
         slug,
         title: matterResult.data.title ? String(matterResult.data.title) : 'Untitled',
         date: matterResult.data.date ? new Date(matterResult.data.date).toISOString() : new Date().toISOString(),
         description: matterResult.data.description ? String(matterResult.data.description) : '',
         tags: Array.isArray(matterResult.data.tags) ? matterResult.data.tags : [],
         readingTime,
-        featured: Boolean(matterResult.data.featured),
+        featured: matterResult.data.featured !== undefined ? Boolean(matterResult.data.featured) : false, // Ensure featured is always boolean
         image: matterResult.data.image ? String(matterResult.data.image) : null,
         category: matterResult.data.category || fileCategory,
       };
+      
+      return post;
     } catch (error) {
       console.error(`Error processing file ${fileName}:`, error);
       return null;
     }
-  }).filter((post): post is BlogListItem => post !== null);
+  }).filter((post): post is BlogListItem => post !== null);  
 
   return allPostsData.sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
 }
@@ -90,7 +92,7 @@ export function getBlogPost(slug: string, category?: PostCategory): BlogPost | n
       if (!fs.existsSync(fullPath)) {
         const categories: PostCategory[] = ['projects', 'writing', 'meditation'];
         for (const cat of categories) {
-          const categoryPath = path.join(postsDirectory, cat, `${slug}.mdx`);
+          const categoryPath = path.join(postsDirectory, cat as string, `${slug}.mdx`);
           if (fs.existsSync(categoryPath)) {
             fullPath = categoryPath;
             break;
@@ -107,7 +109,7 @@ export function getBlogPost(slug: string, category?: PostCategory): BlogPost | n
 
     // Determine category from file path or frontmatter
     const fileCategory = fullPath.includes(category!) ? category : undefined;
-    const postCategory = matterResult.data.category || fileCategory;
+    const postCategory = matterResult.data.category || fileCategory || "uncategorized";
 
     return {
       slug,
@@ -117,7 +119,7 @@ export function getBlogPost(slug: string, category?: PostCategory): BlogPost | n
       description: matterResult.data.description ? String(matterResult.data.description) : '',
       tags: Array.isArray(matterResult.data.tags) ? matterResult.data.tags : [],
       readingTime,
-      featured: Boolean(matterResult.data.featured),
+      featured: matterResult.data.featured !== undefined ? Boolean(matterResult.data.featured) : false,
       image: matterResult.data.image ? String(matterResult.data.image) : null,
       category: postCategory,
       author: {

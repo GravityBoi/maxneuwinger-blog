@@ -10,8 +10,9 @@ interface PageProps {
   };
 }
 
-export default async function WritingPostPage({ params }: PageProps) {
-  const post = await getBlogPost(params.slug, 'writing');
+export default async function WritingPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; // Await params here
+  const post = await getBlogPost(slug, 'writing');
 
   if (!post) {
     notFound();

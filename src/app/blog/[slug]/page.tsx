@@ -4,15 +4,8 @@ import { compileMDX } from 'next-mdx-remote/rsc';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 
-interface BlogPostPageProps {
-  params: {
-    slug: string;
-  };
-}
-
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  // Await the params.slug
-  const slug = await params.slug;
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params; // Await params here
   const post = await getBlogPost(slug);
 
   if (!post) {
