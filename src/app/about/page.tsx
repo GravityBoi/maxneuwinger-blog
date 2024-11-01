@@ -1,4 +1,4 @@
-import Image from 'next/image';
+// import Image from 'next/image';
 import { BookOpen, Coffee, Code, Brain } from 'lucide-react';
 
 export default function AboutPage() {

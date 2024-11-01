@@ -2,7 +2,7 @@
 
 import { getBlogPosts, getAllTags, formatDate } from '@/utils/blogUtils';
 import Link from 'next/link';
-import { useState } from 'react';
+// import { useState } from 'react';
 
 export default function BlogPage() {
   const posts = getBlogPosts();
