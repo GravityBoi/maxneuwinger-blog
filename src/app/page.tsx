@@ -3,7 +3,7 @@ import FeaturedPosts from '@/components/FeaturedPosts';
 import { getLatestPosts, getFeaturedPosts } from '@/utils/blogUtils';
 
 export default async function HomePage() {
-  const latestPosts = getLatestPosts(3);
+  const latestPosts = getLatestPosts(6);
   const featuredPosts = getFeaturedPosts();
   
   return (
@@ -15,11 +15,11 @@ export default async function HomePage() {
             Max Neuwinger
           </h1>
           <p className="text-xl text-gray-600">
-            Master's Student in Computer Science
+            Master's Student in Computer Science at ETH Zurich
           </p>
-          <p className="text-lg text-gray-500">
+          {/* <p className="text-lg text-gray-500">
             ETH Zürich
-          </p>
+          </p> */}
           <div className="flex justify-center gap-6 pt-4">
             <a
               href="https://github.com/GravityBoi"
@@ -57,7 +57,7 @@ export default async function HomePage() {
       </div>
 
       {/* Blog Posts Section */}
-      <div className="w-full px-4 py-16">
+      <div className="w-full px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <FeaturedPosts
             latestPosts={latestPosts}
