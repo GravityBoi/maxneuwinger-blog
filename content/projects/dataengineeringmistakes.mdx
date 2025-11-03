@@ -1,0 +1,57 @@
+---
+title: "My First Research Paper: A Systematic Review of Beginner Data Engineering Mistakes"
+date: "2025-05-20"
+description: "My first published research paper, a systematic review on data engineering mistakes I presented at CSEE&T 2025 in Ottawa."
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["Research", "Systematic Review", "Data Engineering", "FAU", "Education", "CSEE&T"]
+featured: true
+category: "projects"
+---
+
+This project was my first research paper. I started it during my bachelor's degree at Friedrich Alexander University (FAU) and later published it.
+
+The work began at the Professorship for Open Source Software. We were researching better tools for data engineers, including a new Domain Specific Language (DSL). We realized we were guessing what makes data engineering difficult for new people, so we decided to collect data to find out.
+
+## The Problem: What Mistakes Do Beginners Make?
+
+Data in data science and AI is often not clean. Data scientists can spend a large part of their time just cleaning it. This means early mistakes in data engineering are very expensive. To build better tools and training, we needed to answer this question:
+
+What are the most common programming mistakes made by beginners in data engineering?
+
+## Our Method: A Systematic Literature Review
+
+To answer this, I performed a Systematic Literature Review (SLR). This is a structured research method to find, filter, and analyze all relevant papers on a topic.
+
+1.  Search: I looked in academic databases (like IEEE Xplore and Scopus) for papers about programming mistakes by "novices" or "students" in "data engineering," "data science," or related languages (Python, SQL, Java).
+2.  Filter: I started with hundreds of papers. Using specific inclusion rules, I narrowed the list down to 21 main publications from 2003 to 2024.
+3.  Analysis: I used thematic analysis to categorize every mistake mentioned in these papers. I repeated this until no new types of mistakes were found.
+
+## Key Findings
+
+We found that while beginners (mostly students in the studies) make many simple syntax errors, like missing semicolons, these are not the main problem. They are easy to find and fix.
+
+The most serious and common mistakes were:
+
+* Domain Specific Mistakes: These are unique to data engineering.
+    * Dataset Misunderstandings: Not understanding the schema, using the wrong attribute, or hard coding values ('male'/'female' instead of 1/2).
+    * Faulty Data Analysis Logic: Using pandas functions the wrong way (e.g., using `where()` for filtering instead of `filter()`).
+    * Incorrect Data Handling: Not managing `NaN` values, which can quietly produce wrong results.
+* Strategic Errors:
+    * Suboptimal Coding: Using a slow `for` loop to go through a pandas DataFrame instead of a fast, vectorized operation.
+    * Wrong Algorithm:Choosing an incorrect approach for the problem.
+
+We combined all these findings into a 9 category classification of mistakes, covering everything from high level strategic errors to simple typos.
+
+## Impact and Publication
+
+This classification is not just theoretical. It provides a data based foundation for:
+* Educators: To create courses that focus on these important, domain specific mistakes instead of just basic syntax.
+* Tool Builders (like our group): To design languages (like Jayvee) and IDE features that can automatically find or prevent these common errors.
+
+This work, "A Systematic Review of Common Beginner Programming Mistakes in Data Engineering," was accepted to the 2025 IEEE/ACM 37th International Conference on Software Engineering Education and Training (CSEE&T).
+
+I presented this first paper in Ottawa, Canada, while I was still a bachelor's student.
+
+Link to Full Paper: [https://arxiv.org/abs/2504.16644](https://arxiv.org/abs/2504.16644)

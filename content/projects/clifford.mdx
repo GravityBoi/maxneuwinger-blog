@@ -1,0 +1,49 @@
+---
+title: "FAST Clifford Neural Layers: 50x Speedup with C & AVX2"
+date: "2025-07-15"
+description: "High-performance computing project from ETH optimizing Clifford Neural Layers, achieving a 50x speedup over C baselines and 30% over PyTorch."
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["C", "AVX2", "Python", "Clifford Algebra", "ETH"]
+featured: true
+category: "projects"
+---
+
+For a course project at ETH, my team and I worked on optimizing a new deep learning component called Clifford Neural Layers. These layers are useful for physics simulations, like fluid dynamics, but the current PyTorch code runs slowly during inference. We aimed to improve this inference speed.
+
+## The Problem: Slow Geometric Deep Learning Inference
+
+Our specific goal was to optimize the 2D and 3D Clifford convolutional layers and multivector activation layers. We targeted a single CPU core, an Intel i7 12700KF.
+
+The existing code, in both PyTorch and plain C, was not very efficient. The main problems were:
+* Copying data unnecessarily, like building large explicit kernels.
+* Accessing memory inefficiently, which caused poor data locality.
+* Repeating calculations, particularly in the activation functions.
+* Not using the CPU's SIMD (Single Instruction, Multiple Data) features.
+
+## Our Approach: Low Level C and AVX2 Optimization
+
+We decided to write the optimized layers directly in C. We used Python's `ctype` library to connect our C code back to Python.
+
+Our optimization strategy had several parts:
+
+1.  Memory Layout: We changed the data structure completely. This was to make sure we accessed memory sequentially with a unit stride. This was important for the next step.
+2.  AVX2 Vectorization: We used AVX2 SIMD instructions by hand. This let us process 8 single precision floating point numbers at the same time and helped parallelize the math.
+3.  Algorithmic Changes: For the multivector activation layers, we moved the expensive `sigmoid` calculation out of the inner loop. This stopped it from being calculated more than needed.
+4.  Code Generation: We wrote Python scripts that automatically generated specialized C code. This helped us make branch free functions for different layer setups.
+5.  ILP Focused Code: We wrote the C code in a Static Single Assignment (SSA) style. This helped the CPU's out of order execution engine find more independent instructions, which improves instruction level parallelism (ILP).
+
+## Key Results
+
+Our optimizations produced very good results.
+
+* Our optimized multivector activation layer was up to 50 times faster than the plain C baseline.
+* In a benchmark test of a full network block, our C code was 30% faster than the standard PyTorch version on large data.
+* For the 2D and 3D Clifford convolutional layers, we measured a sustained performance of 31 FLOPs/cycle. This value is the theoretical compute bound of the CPU.
+
+This project was a great experience in performance engineering and showed how much speed can be gained by optimizing for specific hardware.
+
+The full technical analysis is available in our final report.
+
+Link to Full Report: [https://arxiv.org/abs/2507.01040](https://arxiv.org/abs/2507.01040)

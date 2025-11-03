@@ -1,0 +1,269 @@
+---
+title: "ICRA Competition - LLM, VLM, Jetson"
+date: "2024-06-21"
+description: "Experience report from ICRA 2024 in Yokohama"
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["Evolonic", "Fine-tuning", "VLM", "Jetson"]
+featured: false
+category: "projects"
+---
+
+# An Unexpected Journey to ICRA 2024: Building Autonomous Robots in Japan
+
+<img
+  src="/images/ICRA/2024-06-Bots-and-Bento-Lead-pic.webp"
+  alt="Bots & Bento Competition"
+  style={{ width: "50%" }}
+  className="mx-auto"
+/>
+
+## The Unexpected Invitation
+
+In April 2024, I received an unexpected message from one of my teammates at Evolonic. The question was simple yet surprising: "Want to come to Japan with us?" Naturally, I was confused. Why Japan? Why so spontaneous? And why next month in May?
+
+It turned out my teammate had applied to the Bots & Bento Competition, a robotics competition as part of ICRA 2024, and our team of 5 had been accepted. Despite having other plans, the opportunity was too exciting to pass up, and I decided to join this spontaneous adventure.
+
+## What is ICRA?
+
+ICRA (International Conference on Robotics and Automation) 2024 is a prestigious international robotics conference featuring speeches, demonstrations, and various competitions. Our team was selected to participate in one of these competitions, partnering with Olive, a Munich-based robotics startup.
+
+## The Challenge: Bots & Bento
+
+Our team was one of just six international teams selected for the inaugural ["Bots & Bento" Robotic Pallet Handling Competition](https://www.tum-venture-labs.de/education/bots-bento-the-first-robotic-pallet-handler-competition-icra-2024/). The challenge required us to build an autonomous robot using materials provided by Olive that could handle KLTs (small trolleys) and transport them to specific positions. While this might sound straightforward, the complexity of autonomous robotics made it a very challenging project.
+
+The competition was co-organized by Olive Robotics, UTokyoIPC, and TUM Venture Lab Robotics/AI, aiming to bridge European and Japanese robotics innovation. Each team had 15 minutes to demonstrate their robot's ability to sort five KLTs to predefined parking positions, mimicking real factory automation scenarios.
+
+In the weeks leading up to the competition, while I was tied up with other commitments, my teammates were already deep into prototyping. One interesting aspect of our project was that the robotics hardware from Olive was designed to run ROS 2 natively.
+
+## Journey to Japan
+
+<img
+  src="/images/ICRA/FlightView.webp"
+  alt="View from the Flight to Japan"
+  style={{ width: "30%" }}
+  className="mx-auto"
+/>
+
+In May, we boarded our flight from Munich to Yokohama. The jet lag was brutal, but Tokyo opened up a whole new world I had never experienced before. The sheer scale of the competition venue was overwhelming - multiple massive halls filled with cutting-edge robotics technology and brilliant minds from around the world.
+
+Luckily, we could see Mount Fuji from our hotel room when the weather was good!
+
+<img
+  src="/images/ICRA/HotelRoomView.webp"
+  alt="Mount Fuji View from Hotel"
+  style={{ width: "40%" }}
+  className="mx-auto"
+/>
+
+## The Competition: Bots & Bento Challenge
+
+<img
+  src="/images/ICRA/BotsandBentoBanner.webp"
+  alt="Bots & Bento Competition Banner"
+  style={{ width: "40%" }}
+  className="mx-auto"
+/>
+
+Our challenge, officially named "Bots & Bento," was more than just a robotics competition - it was a vision of the future of warehouse automation. The task? Build and program a robot that could handle standardized KLTs (small wheeled containers) in a way that mimicked real-world warehouse operations.
+
+## The Arena and Rules
+
+We competed in a ~5x6 meter arena with some interesting constraints:
+- The floor was made of firm material (concrete in our case)
+- Virtual walls marked by yellow/black tape that robots couldn't cross
+- Red/white tape marking different zones
+- Five KLTs equipped with AprilTags for identification
+- A designated start/finish zone where each run began and ended
+
+<img
+  src="/images/ICRA/BNBArena.webp"
+  alt="Competition Arena Layout"
+  style={{ width: "70%" }}
+  className="mx-auto"
+/>
+
+## Hardware Kit
+
+Olive Robotics provided each team with a comprehensive set of components:
+- 5 SERVO OLV-SRV01-S64 units
+- 2 CAMERA OLV-CAM01-S systems
+- 1 OLVX™-IMU01-9D
+- 4 Omni Directional Wheels
+- Various mounting hardware and power supplies
+- A hook system for KLT handling
+
+The catch? The robot had to stay within 65x65x90 cm dimensions while handling KLTs measuring 40x30x12cm. While we could 3D print passive parts and use additional compute units, the core hardware had to come from the provided kit.
+
+<img
+  src="/images/ICRA/OliveParts.webp"
+  alt="Olive Robotics Hardware Components"
+  style={{ width: "50%" }}
+  className="mx-auto"
+/>
+
+## Competition Structure
+
+The competition was structured as follows:
+1. **Build Phase (2 hours)**: Assemble an "easy plug-and-play" robot using the Olive hardware
+2. **Development Phase (3 days)**: Create the software solution
+3. **Competition Runs**:
+   - KLT Transport Challenge (15 minutes)
+   - Technical Challenge (10 minutes)
+   - Final Presentation (10 minutes)
+
+However, reality had other plans. What was meant to be a straightforward assembly turned into a significant challenge for all teams. Being Olive's first large-scale hardware test, we encountered various issues that, while understandable for a startup, consumed much of our development time.
+
+## Scoring System
+
+The competition used a comprehensive scoring system:
+- Points for successfully transporting KLTs
+- Bonus points for sorting KLTs by ID
+- Extra points in the technical challenge for creativity (40%), task completion (30%), and robot design (30%)
+- Presentation scoring based on scientific achievement (30%), presentation skills (30%), and teamwork (40%)
+
+We were allowed up to three resets without penalty, but each additional reset would cost us 25 points. A critical rule was that robots couldn't fully cross the yellow/black boundary tape, though partial crossing was permitted.
+
+## Technical Requirements
+
+One interesting aspect that would prove crucial was the AprilTag system. Each KLT was equipped with 8 AprilTags (2 on each side), all sharing the same ID (1-5). This was meant to simplify detection, but as we'd soon discover, it came with its own challenges when using the provided camera.
+
+For more detailed information about the competition rules, you can refer to the official [rulebook](https://github.com/olive-robotics/bots_bento_icra24/blob/main/docs/rulebook.md).
+
+## Our Team Strategy
+
+We divided our team of 5 strategically:
+- 4 members focused on the core robot development and competition tasks
+- I took sole responsibility for the technical challenges, which offered bonus points
+
+## My Technical Contributions
+
+As the technical challenge lead, I focused on developing advanced AI-driven features to enhance our robot's capabilities. Here's a detailed breakdown of each contribution:
+
+### 1. Line Detection System
+Initially, I approached the line detection problem using traditional computer vision methods but quickly discovered their limitations:
+
+#### First Attempt: Classical CV
+- Implemented various OpenCV approaches:
+  - Canny edge detection
+  - HSV color space conversion
+  - Custom thresholds and masks
+- Challenge: Results were inconsistent due to varying lighting conditions
+
+#### Final Solution: YOLOv8
+- Shifted to a deep learning approach using YOLOv8
+- Data Collection Process:
+  - Gathered images from both simulation and competition area
+  - Collaborated with teammates for custom labeling
+- Trained separate models for:
+  - Red tape detection (for KLT positioning)
+  - Yellow tape detection (for boundary recognition)
+
+<img
+  src="/images/ICRA/KLTExample.webp"
+  alt="KLT Line Detection Example"
+  style={{ width: "50%" }}
+  className="mx-auto"
+/>
+
+While the system performed well in testing, we ultimately relied on AprilTag-based orientation due to time constraints and hardware challenges.
+
+### 2. KLT Detection System
+As a backup to the AprilTag system, we developed a robust KLT detection system:
+- Trained a custom YOLOv8 model for direct KLT recognition
+- Achieved reliable detection rates in varied conditions
+- Served as a redundant system for improved reliability
+
+<img
+  src="/images/ICRA/KLTDetection.webp"
+  alt="KLT Detection System Results"
+  style={{ width: "50%" }}
+  className="mx-auto"
+/>
+
+### 3. Human Safety Integration with Vision Language Models
+One of our most innovative features was the integration of VLMs for intelligent human detection:
+
+#### Technical Setup:
+- Platform: NVIDIA Jetson Orin
+- Implementation: Ollama Jetson Container
+- Model: Switched from Llama 3.1 to Llava after encountering countless errors
+
+#### Functionality:
+- Real-time analysis of robot's environment
+- Human presence detection near KLTs
+- Automated safety stop system with explanatory output
+- Local processing for minimal latency
+
+The system successfully identified human interactions with KLTs across our very small test dataset, providing clear safety commands with explanations.
+
+### 4. ROS 2 Humble-Specialized LLM
+To address the common challenges with LLMs mixing up ROS versions all the time, we created a specialized model:
+
+#### Data Preparation:
+1. Web scraped comprehensive documentation:
+   - ROS 2 Humble documentation
+   - Olive Robotics documentation
+2. Data cleaning and preprocessing
+3. Used local Llama 3.1 7B model on Jetson to generate Q&A pairs
+
+#### Fine-tuning Process:
+- Utilized [unsloth](https://unsloth.ai/) for efficient fine-tuning
+- Platform: Google Colab
+- Base Model: Llama 3.1 7B
+- Training Focus: ROS 2 Humble-specific commands and Olive hardware integration
+
+#### Results:
+- Improved accuracy in ROS 2 Humble code generation (based on manual comparison)
+- Integrated knowledge of Olive documentation
+- Successfully deployed via Ollama for local usage
+
+The combination of these technical elements created a comprehensive AI-driven system that, while not fully utilized in the final competition due to hardware constraints, demonstrated the potential for advanced robotics applications.
+
+## The Final Sprint
+
+The days leading up to the final presentation were intense. We often worked late into the night, pushing our technical limits. I faced significant challenges with the fine-tuning process and Jetson containers, barely getting everything operational on presentation day. The pressure was real, but the experience was invaluable.
+
+## Hardware Hurdles
+
+Like other teams, we encountered numerous hardware issues. Being a young startup, Olive's hardware was still in its early stages, and real-world testing revealed various challenges. While these issues provided valuable lessons in hardware debugging and adaptation, they unfortunately consumed more of our development time than we'd anticipated. Instead of focusing on new features, we found ourselves troubleshooting hardware problems.
+
+## Technical Challenge Success
+
+When presentation day arrived, my teammates presented the software functionality of our robot, and I showcased the additional technical innovations to the judges. Our efforts paid off spectacularly - we were the only team to achieve maximum points in the technical challenge category.
+
+## The Final Competition
+
+However, the competition ended with mixed emotions. Just before our robot's final run, we encountered critical hardware issues. Despite our best efforts to fix them, the robot couldn't perform as intended, resulting in minimal points for the actual competition run.
+
+## A Bittersweet Victory
+
+While we didn't win the overall competition, what happened next was unexpected and heartening. The organizers acknowledged that the hardware issues were beyond our control, and the CEO of Olive personally approached our team afterward. He congratulated us, noting that we had "by far the most advanced tech stack and solution." He believed we would have won if not for the hardware complications.
+
+Even more encouraging was what followed - Olive extended several opportunities to our team:
+- Potential collaboration with our Evolonic team
+- Internship opportunities
+
+## Beyond the Competition
+
+The competition might have ended, but our Japanese adventure didn't stop there. We spent the next week and a half exploring Japan, and as a European, I was captivated by the striking cultural differences and unique experiences the country offered.
+
+## Final Thoughts
+
+Looking back, while we didn't secure the victory we'd hoped for, we achieved something perhaps more valuable:
+- Recognition for our technical expertise
+- Validation of our innovative approaches
+- Real-world experience with cutting-edge robotics
+- Incredible team bonding
+- Professional opportunities
+- Unforgettable cultural experiences
+
+I'm immensely grateful to my teammates and the other participants who made this experience so enriching. The competition taught us that success isn't always measured by winning - sometimes it's about the journey, the learning, and the doors that open along the way.
+
+<img
+  src="/images/ICRA/ICRA-2024-bots-and-bento-teams.webp"
+  alt="ICRA 2024 Bots & Bento Teams Group Photo"
+  style={{ width: "90%" }}
+  className="mx-auto"
+/>

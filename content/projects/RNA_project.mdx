@@ -1,0 +1,60 @@
+---
+title: "RNA Folding: Hacking a Kaggle Competition with a Meta-Model"
+date: "2025-07-10"
+description: "How our team from ETH used fine-tuning and a smart meta-learner to tackle the Stanford 3D RNA Folding Kaggle competition."
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["Kaggle", "Deep Learning", "Bioinformatics", "RNA Folding", "Ensemble Learning", "Fine-tuning", "Protenix", "ETH"]
+featured: true
+category: "projects"
+---
+
+Predicting the 3D shape of an RNA sequence from its 1D sequence is a major challenge in biology, similar to protein folding. It is important for drug design and understanding diseases. When Stanford started a Kaggle competition on this topic, my teammates (Sarah Verreault, Andreas Hiropedi) and I decided to participate.
+
+We were a student team with limited resources, so our goal was not to build a new model from scratch. We wanted to use existing tools more effectively.
+
+Our Full Technical Report: [You can read the complete paper here (PDF).](https://github.com/GravityBoi/3D_RNA_Project/blob/main/Stanford_RNA_3D_Folding_Report.pdf)
+
+## The Challenge: No Single Model is Perfect
+
+We began by testing several existing state of the art models, such as DRfold2, RhoFold+, and RibonanzaNet2. We found that no single model performed best on all the RNA targets. Each model had different strengths.
+
+This led us to a two part strategy:
+1.  Improve a single model as much as possible.
+2.  Create a "meta model" that could combine the strengths of all the models.
+
+## Strategy 1: Fine Tuning Protenix
+
+We chose Protenix, an open source AlphaFold3 implementation, as our baseline. It is a general model, but it was not trained to use a key piece of data for RNA: Multiple Sequence Alignments (MSAs). MSAs show how a sequence has evolved, which provides clues about its structure.
+
+Our technical work involved building a data pipeline to process MSAs for all the RNA sequences. We then fine tuned the pre trained Protenix model to teach it how to use this new evolutionary data.
+
+The result was a large improvement in performance. Our fine tuned Protenix model got a 0.08 TM-score improvement over the original baseline. This was a significant gain in the competition. It showed that specializing a general model with domain specific data works very well.
+
+## Strategy 2: The "Meta Learner" Ensemble
+
+Our fine tuned Protenix model was strong, but still not the best on every target. Because of this, we built our meta model.
+
+A simple ensemble might just average all the model predictions, but this usually does not work well. We decided to build a model that learns to pick the best structure.
+
+For our technical contribution, we generated predictions from our top three models (our new Protenix, DRfold2, and RibonanzaNet2) for every RNA. This created a pool of candidate structures.
+
+Next, we engineered 28 features for each candidate structure. These included:
+* Physics based features: If the fold was physically possible (e.g., custom energy scores).
+* Consensus features: How much the structure agreed with other model predictions (e.g., `avg_rmsd_to_others`).
+* Model specific features: The model's own confidence (pLDDT) and its compactness.
+
+We fed these 28 features into a fully connected neural network. We trained this network to predict the actual quality (TM-score) of that candidate structure.
+
+This approach worked very well. Our meta learner could analyze the candidates and select the best ones. The final model achieved 94.1% of the "Oracle Score". The Oracle Score is the theoretical best score possible if you always picked the best structure from the pool. This method was more robust than any single model or any simple ensemble.
+
+## Final Thoughts
+
+This project taught us a lot about "resource aware" machine learning. We did not have the computational resources to build a new state of the art model. Instead, we used existing models and combined them with fine tuning and feature engineered ensembling to get top tier results.
+
+We also had to overcome other challenges. The Kaggle submission portal closed early, which meant we had to build our own time split validation set. We also had to handle data contamination from one of the models, but our meta learner's feature based approach was able to manage this.
+
+This was one of my favorite projects from my Master's program. It combined deep learning, bioinformatics, and problem solving.
+
+Link to the Full Code: [https://github.com/GravityBoi/3D_RNA_Project](https://github.com/GravityBoi/3D_RNA_Project)

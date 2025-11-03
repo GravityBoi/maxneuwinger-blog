@@ -1,0 +1,58 @@
+---
+title: "My Bachelor Thesis: Taming the Curse of Dimensionality"
+date: "2024-08-22"
+description: "My thesis at FAU, where I benchmarked Sparse Grids and Monte Carlo methods for high-dimensional numerical integration in FEM and quantum physics."
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["Bachelor Thesis", "Scientific Computing", "C++", "Sparse Grids", "Monte Carlo", "FEM", "FAU", "SGpp"]
+featured: true
+category: "projects"
+---
+
+This project was my Bachelor's thesis at Friedrich Alexander Universität Erlangen Nürnberg (FAU) at the Chair for System Simulation. It was a project in high performance scientific computing about a problem in physics and engineering called the "Curse of Dimensionality."
+
+## The Problem: The "Curse of Dimensionality"
+
+Many real world problems, like in Finite Element Methods (FEM), need to solve integrals in high dimensions (3D, 6D, or more).
+
+The simple way to do this is with a full grid of points. However, the number of points required grows exponentially with the dimension, following `O(N^d)`. For 6 dimensions, this becomes computationally impossible. This is known as the "Curse of Dimensionality."
+
+My thesis goal was to find a practical solution for a C++ FEM library called `ExPDESG`, which is used to solve complex Partial Differential Equations (PDEs). The objective was to efficiently calculate the "local stiffness matrices," which are the high dimensional integrals used in FEM.
+
+## The Contenders: Sparse Grids vs. Monte Carlo
+
+I was assigned to integrate and test a C++ library called `SGpp` (Sparse Grids++) into `ExPDESG`.
+
+The main idea was to compare two different methods for computing these integrals:
+
+1.  Sparse Grid Quadrature: This is a deterministic method. Instead of a full grid, it uses a hierarchical, sparse grid. It places points in a specific way to avoid the exponential cost. It is theoretically optimized for high dimensional problems.
+2.  Monte Carlo Integration: This is a random method. You sample the function at thousands of random points and then take the average. Its error rate, `O(1/√N)`, is completely independent of the dimension.
+
+## The Test Bench: From Smooth Functions to Quantum Physics
+
+To see which method was better, I tested them on two kinds of problems:
+
+1.  Function Classes: Four function classes in 3D and 6D. These ranged from a simple smooth polynomial (C1) to a function with a difficult singularity (C4).
+2.  A Real World 6D Problem: The quantum mechanical Hamiltonian of a Helium atom. This is a standard 6 dimensional problem (two electrons, each with 3 coordinates). It has a well known singularity where the electrons get too close to each other (`r1 = r2`), which causes problems for the calculation.
+
+## The Surprising Results: Monte Carlo Wins
+
+I originally expected the Sparse Grid method to be better, but the results were very clear.
+
+* Sparse Grid Quadrature (Deterministic):
+    * It worked well for the smooth, low dimensional functions (C1, C2).
+    * It had significant trouble with the singularity (C4).
+    * On the 6D Helium atom, it failed. The method was very sensitive to the singularity. Even with a small fix to avoid division by zero, the results did not converge. The computation time also grew extremely fast.
+
+* Monte Carlo Integration (Random):
+    * This method performed the best.
+    * It was much faster than sparse grid quadrature, especially in 6D.
+    * It handled the singularities (both C4 and the Helium atom) perfectly. This is because the probability of a random point landing exactly on the singularity is almost zero.
+    * The Monte Carlo method quickly converged to a stable, correct value for the 6D Helium problem, while the Sparse Grid method was unusable.
+
+## Final Thoughts & Thesis Conclusion
+
+My Bachelor's thesis concluded that for the complex, high dimensional, and singular integrals found in `ExPDESG`'s problems, the Monte Carlo method was superior. It was more robust and more computationally efficient than sparse grid quadrature.
+
+This project was a great experience in scientific computing, C++, and the practical side of numerical methods. It showed that the most complex algorithm is not always the best solution for a real world problem.
