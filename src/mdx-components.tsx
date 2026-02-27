@@ -1,5 +1,5 @@
 import type { MDXComponents } from 'mdx/types';
-import { DetailedHTMLProps, HTMLAttributes, AnchorHTMLAttributes } from 'react';
+import { DetailedHTMLProps, HTMLAttributes, AnchorHTMLAttributes, TableHTMLAttributes, TdHTMLAttributes, ThHTMLAttributes } from 'react';
 
 export const mdxComponents: MDXComponents = {
   h1: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement>) => (
@@ -21,7 +21,7 @@ export const mdxComponents: MDXComponents = {
     <h6 className="text-base font-bold mt-4 mb-2">{children}</h6>
   ),
   p: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>) => (
-    <p className="text-gray-800 mb-4 leading-relaxed">{children}</p>
+    <p className="text-gray-600 mb-4 leading-relaxed">{children}</p>
   ),
   strong: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => (
     <strong className="font-bold">{children}</strong>
@@ -36,11 +36,11 @@ export const mdxComponents: MDXComponents = {
     <ol className="list-decimal list-inside mb-4 ml-4 space-y-2">{children}</ol>
   ),
   li: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLLIElement>, HTMLLIElement>) => (
-    <li className="text-gray-800">{children}</li>
+    <li className="text-gray-600">{children}</li>
   ),
   a: (props: DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>) => (
-    <a 
-      href={props.href} 
+    <a
+      href={props.href}
       className="text-blue-600 hover:text-blue-800 underline"
       target={props.href?.startsWith('http') ? '_blank' : undefined}
       rel={props.href?.startsWith('http') ? 'noopener noreferrer' : undefined}
@@ -57,11 +57,42 @@ export const mdxComponents: MDXComponents = {
     </div>
   ),
   pre: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => (
-    <pre className="bg-gray-100 p-4 rounded-lg overflow-x-auto mb-4">
+    <pre className="rounded-lg overflow-x-auto mb-6 text-sm leading-relaxed">
       {children}
     </pre>
   ),
-  code: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => (
-    <code className="bg-gray-100 px-1 rounded">{children}</code>
+  code: ({ children, className, ...props }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => {
+    if (className) {
+      // Code block inside <pre> — styled by highlight.js theme
+      return <code className={className} {...props}>{children}</code>;
+    }
+    // Inline code
+    return <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800" {...props}>{children}</code>;
+  },
+  table: ({ children }: DetailedHTMLProps<TableHTMLAttributes<HTMLTableElement>, HTMLTableElement>) => (
+    <div className="overflow-x-auto my-6">
+      <table className="min-w-full border-collapse border border-gray-300 text-sm">{children}</table>
+    </div>
+  ),
+  thead: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>) => (
+    <thead className="bg-gray-100">{children}</thead>
+  ),
+  tbody: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>) => (
+    <tbody className="divide-y divide-gray-200">{children}</tbody>
+  ),
+  tr: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLTableRowElement>, HTMLTableRowElement>) => (
+    <tr className="hover:bg-gray-50 transition-colors">{children}</tr>
+  ),
+  th: ({ children }: DetailedHTMLProps<ThHTMLAttributes<HTMLTableCellElement>, HTMLTableCellElement>) => (
+    <th className="border border-gray-300 px-4 py-2 text-left font-semibold text-gray-900">{children}</th>
+  ),
+  td: ({ children }: DetailedHTMLProps<TdHTMLAttributes<HTMLTableCellElement>, HTMLTableCellElement>) => (
+    <td className="border border-gray-300 px-4 py-2 text-gray-700">{children}</td>
+  ),
+  figure: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => (
+    <figure className="my-8">{children}</figure>
+  ),
+  figcaption: ({ children }: DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>) => (
+    <figcaption className="mt-2 text-center text-xs text-gray-500 italic">{children}</figcaption>
   ),
 };

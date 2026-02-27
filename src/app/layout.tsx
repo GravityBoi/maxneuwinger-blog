@@ -1,5 +1,6 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
+import 'highlight.js/styles/github-dark.css'
 import type { Metadata } from 'next'
 import Header from '../components/Header';
 
@@ -21,7 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-gray-50`}>
+      <body className={`${inter.className} min-h-screen bg-gray-50`} suppressHydrationWarning>
         <Header />
         {children}
       </body>

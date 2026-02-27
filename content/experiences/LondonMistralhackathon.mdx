@@ -10,7 +10,7 @@ featured: false
 category: "projects"
 ---
 
-Sometimes the best adventures start with a "no" that turns into a surprising "yes." That's exactly what happened with my journey to the Mistral AI Hackathon in London – a story of expired passports, spontaneous decisions, and serendipitous encounters at ETH University.
+Sometimes the best adventures start as a complete logistical disaster. That’s exactly what happened with my trip to the Mistral AI Hackathon in London—a chaotic mix of expired passports, spontaneous flight bookings, and ending up in a hacker house with people I met on the internet.
 
 <img
   src="/images/Londonhackathon/stage.webp"
@@ -19,48 +19,35 @@ Sometimes the best adventures start with a "no" that turns into a surprising "ye
   className="mx-auto"
 />
 
-## The Initial Plan
+## The Pre-Hackathon Chaos
 
-It all started when my Evolonic teammate shared news about the Mistral AI hackathon in London. Despite the short notice – just one week before the event – we immediately signed up. When both of us got accepted, we were thrilled. However, fate had other plans: my teammate's passport had expired, and with the UK no longer part of the EU, our initial plan fell through. I was devastated.
+The whole thing kicked off when my Evolonic teammate found out about the Mistral AI hackathon in London just a week before the event. We applied on a whim, both got accepted, and were super hyped. But then reality hit: thanks to post-Brexit travel rules, you need a valid passport to enter the UK. My teammate's passport was expired. Trip canceled. I was honestly pretty bummed out.
 
-## A Serendipitous Turn of Events
+But fast forward to Wednesday afternoon. I was hanging out and studying with some friends at ETH, and a friend casually mentioned she had also gotten into the London hackathon but wasn't going to go because her team fell through. I immediately pitched the idea of teaming up. One thing led to another, and within an hour, we were booking flights to London for that Friday.
 
-But sometimes, the university corridors hold unexpected opportunities. While studying with friends at ETH University on Wednesday, a casual conversation changed everything. "I almost would have gone to London this weekend," my friend mentioned off-handedly. My ears perked up immediately.
+## The Hacker House Gamble
 
-As it turned out, she had also signed up for the hackathon but backed out due to not having the right team composition. One conversation led to another, and before we knew it, we were booking flights for that Friday. Talk about spontaneous decisions!
+Flights were sorted, but we had nowhere to sleep. While frantically searching online late at night, I saw that a startup called Chipp AI was hosting a hacker house for the event. The deadline was literally midnight, so we speed-ran the application.
 
-## The Race for Accommodation
+Honestly, I fully expected to get ghosted, but we got a direct reply from the CEO of Chipp AI asking if we were actually serious about flying in on such short notice. We confirmed, but the whole flight to London we were kind of wondering if this place actually existed or if we were about to be stranded in the city.
 
-With flights booked, we faced our next challenge: finding a place to stay in London on incredibly short notice. While searching online, I stumbled upon something intriguing – Chipp AI was hosting a hacker house for the event. With midnight approaching and the application deadline looming, we hurriedly submitted our application.
+Luckily, we landed Friday night, made our way to the house, and the Chipp AI team was incredibly welcoming. It was a super nice setup, and it felt great to just crash on a bed before the actual coding marathon started.
 
-What happened next was surreal. We received a direct response from the CEO of Chipp AI himself, asking if we were actually serious about coming. The late-night exchange had an air of disbelief on both sides – them wondering if we'd really show up on such short notice, and us wondering if this was really happening. Of course, we confirmed our commitment immediately.
+## The Hackathon & The Idea
 
-This added another layer of excitement (and nervous energy) to our adventure. As we boarded our flight to London, we couldn't help but wonder: Did this hacker house really exist? Who were these Chip AI people who had so readily welcomed perfect strangers into their space? Would this spontaneous decision turn out to be brilliant or crazy?
+Saturday morning, we headed over to the a16z offices where the event was hosted. The venue was incredible—modern, packed with energy, and loaded with top-tier food and drinks to keep everyone fueled. We originally started as a trio, but one person split off to do their own thing, leaving just my friend and me to tackle a project together.
 
-## Landing in London
+We were tossing around a few ideas, but a chat with Nick Carmont from Mistral AI really steered us in the right direction. We decided to tackle a problem that drives everyone crazy: AI-generated presentations usually look terrible.
 
-Friday evening found us touching down in London, thankfully without significant delays. We arrived at the hacker house before midnight, hearts racing with uncertainty about what awaited us. Any anxieties quickly melted away as we were greeted by the incredibly welcoming Chip AI team. Despite feeling slightly overwhelmed by the whirlwind of events, excitement coursed through me as we settled into our beds in the spacious house, ready for the adventure ahead.
+Why? Because traditional LLMs are blind. They generate text for a slide, but they have no idea if that text is overflowing, if the formatting is completely broken, or if the images are placed in a way that makes sense.
 
-## The Hackathon Begins
+Our fix was to use Mistral's brand new multimodal model, Pixtral (their first model that can actually process images), to create a visual feedback loop.
 
-The next morning, we made our way to the hackathon venue hosted by 16z. The modern, well-organized space immediately impressed us, complete with abundant refreshments and food options – a promising start to our hackathon journey. Though one teammate decided to take a different path, my friend and I chose to forge ahead as a duo.
+## How We Built It
 
-## Our Project: Reimagining AI Presentations
+We spent the first day mapping things out and building the core, eventually passing out and coming back fresh on Sunday to sprint to the 2 PM finish line.
 
-After exploring various ideas and having an enlightening conversation with Nick Carmont from Mistral AI, we decided to focus on a persistent problem in the AI space: presentation generation. Our project aimed to revolutionize how AI creates presentations by leveraging Mistral's new multimodal Pixtral model – their first capable of processing images.
-
-The problem we aimed to solve was clear: AI-generated presentations typically fall short because the AI can't "see" how the presentation looks. This leads to common issues like:
-- Overcrowded slides with too much text
-- Formatting inconsistencies
-- Mismatched or missing images
-
-Our solution? A feedback loop system that would allow the AI to self-correct and optimize presentations by actually seeing and understanding the visual output it creates.
-
-## Technical Implementation
-
-After a challenging first day, we made the wise decision to get some rest and return fresh the next morning. With the 2 PM deadline looming, we worked intensively to perfect our pipeline. Here's how our final solution worked:
-
-### The Pipeline
+Here is what our pipeline actually looked like:
 
 <img
   src="/images/Londonhackathon/diagram.webp"
@@ -69,91 +56,28 @@ After a challenging first day, we made the wise decision to get some rest and re
   className="mx-auto"
 />
 
-1. **Input Processing**
-   - Started with a scientific paper in PDF format
-   - Built a preprocessing system to extract three key elements:
-     - Text content
-     - Mathematical formulas
-     - Images and figures
+1. First, we feed the system a scientific paper as a PDF.
+2. We run a custom preprocessing script to rip out the text, the mathematical formulas, and the actual figures/images.
+3. We send that parsed data to GPT-4o and ask it to draft a LaTeX Beamer presentation, plugging in the extracted images where they belong.
+4. We compile the LaTeX code into a PDF and automatically take screenshots of every single generated slide.
+5. Here is where the magic happens: we feed those slide screenshots into Mistral's Pixtral model. It looks at the slide, realizes "hey, this text is overlapping the image" or "this slide is way too crowded," and generates a specific critique.
+6. We pass that critique back to GPT-4o to fix the LaTeX code, recompile, and loop the process until the slide actually looks good.
 
-2. **Initial Presentation Generation**
-   - Used GPT-4o to create an initial LaTeX Beamer presentation
-   - Incorporated the extracted images directly
-   - While the first version wasn't perfect, it provided a crucial foundation
+## The Reality Check (A.K.A. The Bugs)
 
-3. **The Feedback Loop**
-   - Compiled the LaTeX into a PDF presentation
-   - Extracted screenshots of individual slides
-   - Fed these screenshots to Mistral's multimodal model in small batches
-   - The model analyzed the visual aspects and generated specific critiques
-   - These critiques were then processed by GPT-4o to improve the presentation
-   - This loop continued iteratively until we achieved satisfactory results
+Of course, the diagram makes it look way easier than it actually was. We hit some massive technical walls along the way.
 
-## The Final Push
+Parsing PDFs is universally awful, but extracting images dynamically and keeping them linked to the right context was especially painful. Then we had to deal with GPT-4o's context window limits; if we stuffed too much of the paper in at once, it would lose the plot or just hallucinate where images should go.
 
-With the 2 PM deadline approaching, we worked intensively to refine our system. Each iteration of our feedback loop brought noticeable improvements to the presentations, validating our core concept: that AI-generated presentations could indeed be dramatically improved by incorporating visual feedback.
+But the real boss fight was LaTeX compilation. If GPT-4o messed up a single bracket, the entire pipeline crashed. My teammate was trying to run the compilation environment on MacOS and was just running into endless errors, whereas my Linux setup ended up being a lot more stable.
 
-### Technical Hurdles and Learning Experiences
+On top of that, Mistral’s new vision API was acting super erratic. We were getting random failures that had nothing to do with rate limits. We had to write some pretty aggressive retry and backoff logic just to keep the pipeline from dying halfway through a presentation generation.
 
-What looks clean and straightforward in a pipeline diagram often hides a multitude of technical challenges. Here's a deep dive into the obstacles we faced:
+## The Results
 
-#### PDF Processing Complexities
-The seemingly simple task of extracting content from PDFs proved to be our first major challenge. While text extraction was relatively straightforward, image extraction was particularly tricky. Each paper had its own quirks in how figures were embedded, requiring robust handling of various edge cases.
+Despite the headaches, the feedback loop actually worked! Having an AI visually roast its own slides to make them better produced some genuinely cool results.
 
-#### Initial Presentation Generation
-We encountered several challenges with the initial GPT-4o generation:
-
-1. **Context Window Limitations**:
-   - Single API calls weren't sufficient due to context window size limits
-   - Information density suffered when trying to compress content
-   - The model would often lose focus on key information mid-generation
-
-2. **Image Placement**:
-   - Getting the model to place extracted images in contextually appropriate locations was challenging
-   - We needed to develop specific prompting strategies to maintain image-content coherence
-
-#### LaTeX and Compilation Challenges
-
-The LaTeX generation and compilation process became a significant bottleneck:
-
-1. **Error Handling**:
-   - Non-compilable LaTeX code would break the entire pipeline
-   - Each error meant restarting the generation process
-   - Cross-platform compilation issues between Mac and Linux added complexity
-
-2. **Platform-Specific Issues**:
-   - My teammate struggled with LaTeX compilation on MacOS
-   - Linux proved more stable but required specific configuration
-
-#### Mistral Vision Model Challenges
-
-The most frustrating challenges came from working with the new Mistral vision model:
-
-1. **Reliability Issues**:
-   - Random API failures that weren't related to rate limiting
-   - Inconsistent error patterns made debugging difficult
-
-2. **Error Handling Complexity**:
-   - Standard HTTP error handling wasn't sufficient
-   - Retries and backoff strategies provided more conistent results
-   - The root cause remained elusive throughout the hackathon
-
-3. **Integration Challenges**:
-   - While feeding critiques back to GPT-4o worked well
-   - The unreliability of the vision model created a bottleneck
-   - Each failure meant potentially losing valuable iteration time
-
-These challenges taught us valuable lessons about:
-- The importance of robust error handling
-- The need for flexible retry mechanisms
-- The reality of working with cutting-edge AI models
-- The value of platform-independent development approaches
-
-## Results: Seeing the System in Action
-
-Our iterative feedback system showed promising results in improving presentation quality. Let's look at some before-and-after examples that demonstrate the potential of our approach:
-
-### Example 1: From Cluttered to Clear
+### Example 1: Fixing the Clutter
 
 **Initial Generation:**
 <img
@@ -171,9 +95,9 @@ Our iterative feedback system showed promising results in improving presentation
   className="mx-auto"
 />
 
-You can see how the refinement process improved the slide's visual hierarchy and content organization. The Mistral vision model identified issues with the initial layout, leading to a cleaner, more professional final version.
+You can clearly see how Pixtral caught the awful layout in the first try and forced GPT-4o to clean up the hierarchy and make it actually readable.
 
-### Example 2: Enhanced Visual Impact
+### Example 2: Balancing Visuals
 
 **Initial Generation:**
 <img
@@ -191,48 +115,12 @@ You can see how the refinement process improved the slide's visual hierarchy and
   className="mx-auto"
 />
 
-The transformation in this example showcases how our system learned to:
-- Better balance text and visual elements
-- Improve the overall slide composition
-- Maintain clear content hierarchy
-- Enhance readability and visual appeal
+Here, the system learned to balance the text density with the embedded figure much better after a couple of passes.
 
-## The Final Presentation
+## Wrapping Up
 
-Presenting our work to the judges was a highlight of the hackathon. Despite the technical challenges we'd faced, we were able to demonstrate how our feedback loop system could improve AI-generated presentations. The judges were engaged and interested, asking insightful questions that led to fascinating technical discussions. While we didn't win any prizes, the experience of sharing our ideas with experienced professionals in the field was incredibly valuable.
+When the deadline hit, we got to present our pipeline to the judges. The technical discussions were super interesting, and they asked a lot of great questions about how we managed the visual feedback loop. We didn't end up taking home a prize, but honestly, just building something this complex over a weekend and having it actually run was a huge win.
 
-## More Than Just Code
+A massive shoutout to a16z for hosting an incredibly smooth event, the Mistral team for letting us play with their new tech, and especially Scott Hunter and the whole Chipp AI crew for the hacker house. I’ve actually kept using Chipp's tools since the hackathon—they are building a genuinely great community over there (you can check them out at [chipp](https://www.chipp.ai/)).
 
-What made this hackathon truly special went beyond the technical aspects. The event organization by a16z was exceptional:
-
-- **Venue**: Modern offices that, despite occasionally being crowded, provided an inspiring environment for innovation
-- **Sustenance**: An abundance of high-quality food, drinks, and snacks kept us energized throughout
-- **Community**: The opportunity to connect with like-minded developers and industry experts
-
-## The Chipp AI Experience
-
-A special mention goes to Chipp AI for their incredible hospitality at the hacker house. Their contribution to the hackathon experience was significant:
-
-- Provided a welcoming space for participants
-- Created an environment conducive to collaboration
-- Demonstrated their impressive product, which I've continued to use post-hackathon
-- Fostered a vibrant community of engaged developers
-
-The Chip AI community's level of involvement in their tool's development is remarkable. If you're interested in checking out their work, you can find them at [chipp](https://www.chipp.ai/).
-
-## Acknowledgments
-
-Special thanks to:
-- Scott Hunter (CTO of Chipp AI)
-- The entire a16z team for the excellent organization
-- The Mistral AI team for providing their cutting-edge technology
-
-## Looking Forward
-
-This hackathon may not have resulted in a prize, but it delivered something more valuable: knowledge, friendship, and inspiration. Working alongside my teammate, tackling complex problems, and being part of such a vibrant tech community was an incredible experience. I'm already looking forward to future hackathons with a16z or Mistral, and to reuniting with the Chipp gang.
-
-The spontaneous decision to fly to London for a weekend of coding turned into an unforgettable adventure that reminded me why I love being part of the tech community. Sometimes, the best decisions are the ones made on a Wednesday afternoon at ETH.
-
-I am planning on improving and finishing this project in the future, so stay tuned!
-
----
+This whole weekend was a great reminder of why I love these events. Sometimes the best thing you can do on a random Wednesday afternoon at ETH is just book a flight and figure the rest out later.

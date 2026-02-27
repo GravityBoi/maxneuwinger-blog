@@ -7,55 +7,36 @@ interface FeaturedPostsProps {
   featuredPosts: BlogListItem[];
 }
 
-function PostCard({ post, variant }: { post: BlogListItem; variant: 'featured' | 'latest' }) {
-  const categoryStyles =
-    variant === 'featured'
-      ? 'text-sm font-semibold uppercase tracking-wide text-purple-700'
-      : 'text-sm font-medium uppercase tracking-wide text-blue-600';
-
-  const cardStyles =
-    variant === 'featured'
-      ? 'bg-gradient-to-r from-blue-100 to-purple-100'
-      : 'bg-white';
-
-  const hoverStyles =
-    variant === 'featured'
-      ? 'hover:shadow-xl'
-      : 'hover:shadow-lg';
-
-  const titleStyles =
-    variant === 'featured'
-      ? 'text-2xl font-bold group-hover:text-purple-800'
-      : 'text-xl font-semibold group-hover:text-blue-600';
-
-  const tagStyles =
-    variant === 'featured'
-      ? 'bg-purple-200 text-purple-800'
-      : 'bg-gray-100 text-gray-600';
-
+function PostCard({ post }: { post: BlogListItem }) {
   return (
     <Link
       href={post.category ? `/${post.category}/${post.slug}` : `/blog/${post.slug}`}
       className="group block"
     >
-      <article
-        className={`${cardStyles} rounded-xl shadow-lg transition-transform duration-200 ${hoverStyles}`}
-      >
-        <div className="p-6 md:p-7">
-          {post.category && <div className={`${categoryStyles} mb-2`}>{post.category}</div>}
-          <div className="mb-3 flex items-center text-sm text-gray-600">
-            <span>{formatDate(post.date)}</span>
-          </div>
-          <h3 className={`${titleStyles} mb-3`}>{post.title}</h3>
-          <p className="mb-4 line-clamp-3 text-gray-700">{post.description}</p>
-          <div className="flex flex-wrap gap-2">
+      <article className="flex h-full flex-col rounded-xl border border-gray-100 bg-white p-6 transition-all duration-200 hover:border-gray-200 hover:shadow-md">
+        <div className="mb-3 flex items-center gap-3">
+          {post.category && (
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-400">
+              {post.category}
+            </span>
+          )}
+          <span className="text-xs text-gray-400">{formatDate(post.date)}</span>
+        </div>
+        <h3 className="mb-2 text-lg font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
+          {post.title}
+        </h3>
+        <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-500 line-clamp-3">
+          {post.description}
+        </p>
+        {post.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
             {post.tags.map((tag) => (
-              <span key={tag} className={`rounded-full px-3 py-1 text-sm ${tagStyles}`}>
+              <span key={tag} className="rounded-full bg-gray-50 px-2.5 py-0.5 text-xs text-gray-500 ring-1 ring-gray-200">
                 {tag}
               </span>
             ))}
           </div>
-        </div>
+        )}
       </article>
     </Link>
   );
@@ -69,10 +50,13 @@ export default function FeaturedPosts({ latestPosts, featuredPosts }: FeaturedPo
     <div className="px-4">
       {hasFeatured && (
         <section className="mb-16">
-          <h2 className="mb-8 text-3xl font-bold text-purple-700">Featured Posts</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-8 flex items-center gap-4">
+            <h2 className="text-2xl font-semibold text-gray-900">Featured</h2>
+            <div className="flex-1 border-t border-gray-100" />
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {featuredPosts.map((post) => (
-              <PostCard key={post.slug} post={post} variant="featured" />
+              <PostCard key={post.slug} post={post} />
             ))}
           </div>
         </section>
@@ -80,17 +64,20 @@ export default function FeaturedPosts({ latestPosts, featuredPosts }: FeaturedPo
 
       {hasLatest && (
         <section>
-          <h2 className="mb-8 text-3xl font-bold text-blue-700">Latest Posts</h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mb-8 flex items-center gap-4">
+            <h2 className="text-2xl font-semibold text-gray-900">Latest</h2>
+            <div className="flex-1 border-t border-gray-100" />
+          </div>
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {latestPosts.map((post) => (
-              <PostCard key={post.slug} post={post} variant="latest" />
+              <PostCard key={post.slug} post={post} />
             ))}
           </div>
         </section>
       )}
 
       {!hasFeatured && !hasLatest && (
-        <div className="py-10 text-center text-gray-500">No blog posts available.</div>
+        <div className="py-10 text-center text-gray-400">No posts yet.</div>
       )}
     </div>
   );

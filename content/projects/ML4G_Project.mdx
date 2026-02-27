@@ -1,0 +1,379 @@
+---
+title: "ML for Genomics ETH course winning project solution"
+date: "2026-02-27"
+description: "How do you beat 35 teams in predicting cancer tumor microenvironments? A deep dive into my 1st-place solution."
+author:
+  name: "Max Neuwinger"
+  image: "/images/avatar.webp"
+tags: ["Genomics", "Machine Learning", "ETH"]
+featured: true
+category: "projects"
+---
+
+# Introduction
+
+In my 3rd Master Semester at ETHZ I took the 6 credits course [Machine Learning for Genomics](https://www.vvz.ethz.ch/Vorlesungsverzeichnis/lerneinheit.view?semkez=2025W&ansicht=ALLE&lerneinheitId=194504&lang=en) as part of my Machine Intelligence Core elective courses.
+This course covered Machine learning approaches and biological knowledge for everything related to Genomics, we are talking gene expression prediction, Deconvolution, single RNA-seq, Data Imputation, batch correction, multiomics, Spatial omics, Survival analysis.
+I personally enjoyed the course content quite a lot and I would definitely recommend it! In this project description/blog post I want to detail the second project we had to do in this coure and my solution, so if that sounds interesting in any way stick around.
+
+But first more about the course: One neat aspect of the course organization was that you were able to get bonus points for the exam by doing weekly quizzes answering questions about a specific paper relating to the lecture.
+This was of course purely optional, but the bonus points incentive combined with the fact that the Exam is literally answering paper questions it really made them worth it.
+I of course have read papers before, but taking a course where you read fundamental but mostly brand new research papers was just awesome! Some of these papers were actually quite "bad" and we needed to answer some questions as to "why" they were bad; this is a unique skill I don't think I have to practice usually in other courses in any way.
+I can confidently say that I learned a lot a lot in this course.
+
+Anyways, in the course there are 2 big practical projects where one needs to pass the baseline in order to be allowed to take the exam. My solution for the second project got by far the number one place out of around 35 teams and in this post here I want to detail this solution since I think it is super interesting!
+
+The project was split up into 2 task:
+1. Single Cell RNA-SEQ clustering
+2. Bulk Deconvolution
+
+Now you might be asking: what the hell does any of this mean? Let me explain (I should be able to after taking the course...)
+
+Let's step back for a second and give some context, because I think it makes the whole thing way more interesting.
+
+We want to treat cancer better. That's the end goal. Cancer is hard partly because it's not one disease, it varies massively between patients, between tumor types, and even between different parts of the same tumor. To actually make progress you need to understand what is happening at the level of individual cells. So the question becomes: how do you actually look inside a cell and figure out what it's doing?
+
+DNA is out for this purpose: every cell in your body carries essentially the same DNA, so it doesn't tell you much about the current state of a specific cell. What you want is RNA. RNA is the intermediate product between DNA and the proteins a cell actually uses to do its job. It's the realtime readout of which genes are switched on right now. This is incredibly valuable in cancer research: you can see which parts of the immune system are active, whether cancer cells are responding to treatment, which cells are multiplying; all from the RNA signal.
+
+What got especially exciting in the last I think 10 years is that we can now do this at single-cell resolution. Before, you'd take a tumor biopsy, grind it all up, and measure the average RNA signal across millions of mixed cells thrown together (bulk RNA-seq, and we actually use this in part 2 of the project). The problem is you get one blurry average. Is the immune response going up because there are more T-cells, or because the existing T-cells are just more active? You can't tell. Single-cell RNA-seq changed this completely by sequencing each cell individually. For cancer research this is the difference between "there seem to be some immune cells around the tumor" and knowing exactly how many there are, what type they are, and whether they're actually attacking the cancer or standing down.
+
+The really interesting part is what happens when you introduce chemotherapy into this ecosystem. The cells don't just sit there and take it; they react, adapt, and change their gene expression profiles in response. By measuring the RNA before and after treatment, we can actually watch the Tumor Microenvironment (TME) shift in real time and start to understand which cells are responding, which are resisting, and maybe most importantly, why.
+
+# The Data
+
+The project used data from esophageal adenocarcinoma, examining tumor environment changes in response to chemotherapy through single-cell RNA-seq and bulk RNA-seq samples. The single-cell dataset included 10 samples (6 training, 4 test), while the bulk dataset contained 32 samples (12 with known cell type proportions, 20 test).
+
+So, what exactly is esophageal adenocarcinoma (EAC)? In plain English, it’s an aggressive cancer that starts in the glandular cells of your esophagus (your food pipe). If you want to see some not-so-nice-to-look-at pics, go to Wikipedia.
+Of course I did go look at the Wikipedia pictures. I should not have done that before lunch.
+
+From Wikipedia I learned it's the eighth-most common cancer globally (had no idea), is 3 times more common in men than in women (I went down a rabbit hole trying to find out why. The scientific consensus seems to be "probably hormones, lifestyle, and Barrett's esophagus prevalence." Incredibly unsatisfying answer. Moving on.) and outcomes generally tend to be fairly poor (late diagnosis).
+`The overall five-year survival rate (5YSR) in the United States is around 15%, and most people die within the first year of diagnosis`
+That sounds horrible.
+The good news is that also according to Wikipedia the most common causes are tobacco, obesity and acid reflux; at least there is some control
+
+(Side note: Actually, what are the most common cancer causes overall? I looked it up! Lung, breast, colorectal, prostate, stomach. The more you know!)
+
+The TA's most likely picked this specific cancer because it is apparently known for having a big stromal component, meaning the tumor has a physical wall of structural cells (like the Fibroblasts and Myofibroblasts) to protect themselves from the immune system and chemotherapy.
+
+I have never ever heard of this before. It sounds kind of cool but also not cool at all at the same time...
+I looked it up and in normal biological cases if you get a cut the local resting fibroblasts wake up, turn into Myofibroblasts and start pumping out collagen to build a scar and heal the wound.
+However a tumor can constantly pump out signaling proteins that turn normal fibroblasts into Cancer Associated Fibroblasts (CAFs) which build a sort of scar-tissue wall (my current understanding).
+They also can't become "less" since they are not able to undergo apoptosis (programmed cell death).
+
+Our task was to identify nine target cell types: T cells, B cells, Endothelial cells, Fibroblasts, Plasmablasts, Myofibroblasts, NK cells, Myeloid cells, and Mast cells.
+
+That's a lot of new words and why those 9? Well they were given to us in the assignment...
+
+... and they are relevant because a tumor isn't just a mass of only cancer cells, it is a complex ecosystem: the Tumor Microenvironment. By looking at the specific immune and structural cell types we can see whether the body’s internal defense system is successfully attacking the tumor or if the 'stromal' environment is actually shielding the cancer from chemotherapy.
+
+| Cell Types | Role in the Tumor |
+|------------|-------------------|
+| T cells, NK cells | The killers. These directly hunt down and destroy cancer cells by recognizing abnormal proteins on their surface. If they are abundant and active, the immune system is actually fighting back. |
+| B cells, Plasmablasts | B cells mature into Plasmablasts which pump out antibodies that tag cancer cells for destruction by other immune cells. |
+| Fibroblasts, Myofibroblasts | Structural cells that produce collagen. In a tumor they get hijacked to build a dense physical wall around the cancer, literally blocking drugs from getting in. |
+| Endothelial cells | Line the walls of blood vessels. Tumors need to grow new vessels to get oxygen and nutrients (angiogenesis), and these cells are the building blocks for exactly that. |
+| Myeloid cells, Mast cells | The wild cards. Depending on the signals they receive they can either ramp up the immune attack or actively suppress it, which tumors are very good at exploiting. |
+
+By first clustering the single-cell data, we create a high-resolution 'census' of what these nine cell types actually look like at a molecular level. We then use these digital signatures to deconvolve the bulk samples, allowing us to accurately map out how the entire cellular ecosystem shifts in response to chemotherapy across dozens of different patients.
+
+One more thing worth explaining before we dive in: the data comes from 10 different patients, which immediately introduces what is called a batch effect. Even if two cells are biologically identical, the raw RNA measurements from patient A will look slightly different from patient B simply because of technical noise: different days in the lab, slightly different reagent batches, different sequencing depths. For clustering this is a nightmare, because a naive model will just group cells by which patient they came from rather than what cell type they actually are. You end up with 10 patient blobs instead of 9 cell type clusters, which is exactly as useless as it sounds. Removing this technical noise while preserving the real biological signal is one of the core challenges of the whole task.
+
+# Part 1: Single RNA-Seq Clustering
+
+## Exploratory Data Analysis
+
+If I learned one thing for projects/challenges like this then it is to first to EDA before anything else!
+
+The dataset initially contained 7,725 genes across 32,374 training cells and 18,616 test cells. The cell type distribution was very imbalanced:
+
+| Cell Type | Count |
+|-----------|-------|
+| T cells | 16,676 |
+| B cells | 4,236 |
+| Fibroblasts | 2,602 |
+| Myeloid | 2,487 |
+| Plasmablasts | 2,032 |
+| NK cells | 1,911 |
+| Mast cells | 1,112 |
+| Myofibroblasts | 719 |
+| Endothelial | 599 |
+
+Additionally, the samples were split by chemotherapy treatment timing: 20,387 pre-treatment and 11,987 post-treatment cells.
+
+## Initial Approach: Reference-Free scVI
+
+For clustering single-cell RNA-seq data, there are two main paradigms: reference-free methods (which don't use known cell type labels) and reference-based methods (which do).
+Generally reference-based methods perform significantly better, however since passing the baseline in the first project was relatively straightforward, I decided to first go and try a reference-free approach using the `scvi` library.
+
+For the actual model choice, I remembered seeing scVI come up in a benchmark comparison table from the lecture slides, so that was honestly the main reason. It's worth noting that a more recent and comprehensive benchmarking study (Yin et al., Genome Biology, 2025) actually identifies scDCC, scAIDE, and FlowSOM as the top performers for single-cell clustering; so if I were approaching this today with that paper in hand, I might have started somewhere different. But I went with what I remembered from the lecture slides, and given that scVI is also very well maintained with a clean API, I can't complain too much about how it turned out.
+
+Anyways, I started with standard preprocessing:
+
+```python
+sc.pp.filter_genes(adata_full, min_counts=10)
+sc.pp.normalize_total(adata_full, target_sum=1e4)
+sc.pp.log1p(adata_full)
+adata_full.raw = adata_full
+
+N_TOP_GENES = 2000
+
+sc.pp.highly_variable_genes(
+    adata_full,
+    n_top_genes=N_TOP_GENES,
+    subset=True,
+    layer="counts",
+    flavor="seurat_v3",
+    batch_key="Sample"
+)
+```
+
+Honestly this is just standard copy and paste workflow, but I think the rational and reasoning behind it is important to know, so let me try and explain:
+
+So basically we filter out genes that have fewer than 10 total counts across all cells. These are basically measurement noise, not real biology.
+
+Then we normalize per cell to 10,000 counts. Why? Because the absolute count values are meaningless on their own. When you sequence a cell, how many RNA molecules you actually capture is partly random. It depends on how well the cell was lysed, how efficiently the library was prepared, how much the sequencer happened to sample from that cell. This is called sequencing depth variation, and it has nothing to do with biology. A cell with 20,000 total counts isn't necessarily "more active" than one with 8,000, it just got sequenced more. So we divide each gene's count by the total count of that cell and multiply by 10,000. Now every cell sums to 10,000 and we're comparing relative expression, which is what we actually care about.
+
+Then we apply a log1p transformation. It calculates log(1 + x), where the +1 is there specifically because a lot of genes have 0 counts, and log(0) is undefined. Without the transformation the data is extremely right-skewed: a handful of highly expressed genes might have counts in the thousands while the majority sit at 1, 2, or 0. This is a problem for basically any ML model. Euclidean distances get completely dominated by those few huge values. A gene going from 1,000 to 5,000 would look "more different" than a gene going from 1 to 10, even though the second one is a 10x change and arguably more biologically interesting. The log scale fixes this by compressing large values and spreading out small ones, so that fold changes are treated consistently regardless of the absolute expression level. It also makes the data much closer to normally distributed, which most ML models implicitly assume.
+
+Then we use the seurat v3 highly variable genes selection to only keep the genes that are actually changing.
+You might wonder: "Why not just calculate the variance of every gene and keep the ones that change the most?"
+In RNA-seq data genes with a higher avergae gene count naturally have a higher variance (just because of the absolute numbers), so picking the highest variance genes directly would be selecting only the most abundant genes.
+Seurat v3 basically works by predicting the expected variance for a gene based upon it's avergae expression level and then calculates the standardized variance (how much the gene varies beyond what is expected for its size).
+
+I always wondered why seurat_v3 specifically is basically the default?
+So I googled and answer is that it was the first method that properly accounted for the mean-variance relationship in scRNA-seq data.
+Before it, people used much simpler dispersion-based approaches that would systematically pick up housekeeping genes (genes every cell expresses at the same high level which are completely useless for telling cell types apart).
+Seurat v3 fixed this by fitting a local regression to model expected variance as a function of mean expression, then ranking genes by how much they deviate from that expectation.
+It's not even that novel of an idea statistically, but it was the right solution at the right time and got adopted universally, so now it's just the standard.
+
+And yes, I also always wondered: why v3? What were v1 and v2??? I looked it up again and: Seurat is actually a full single-cell analysis toolkit (not just this one function), developed by the Satija lab at NYU. v1 came out around 2015 and was basically the first widely used pipeline for scRNA-seq analysis. v2 in 2018 was a big deal because it introduced canonical correlation analysis (CCA) for integrating data from multiple experiments, solving the batch effect problem for the first time in a user-friendly way (that's at least how i understood it). v3 in 2019 then overhauled the HVG selection with the mean-variance modelling described above, and also switched to using negative binomial-based normalization.
+
+Now let's move on to the actual model! (Feels like the fourth "now let's move on" in this post but this time I genuinely mean it)
+
+## Understanding scVI Architecture
+
+Let's first take a look at the architecture behind the scVI model since I think it is super cool how it handles the batch effects!
+
+<figure>
+  <img
+    src="/images/ML4G_project/VAE_Basic.png"
+    alt="Variational Autoencoder structure diagram"
+    style={{ width: "100%" }}
+    className="mx-auto"
+  />
+  <figcaption style={{ textAlign: "center", fontSize: "0.8em", color: "#666" }}>
+    <a href="https://commons.wikimedia.org/wiki/File:VAE_Basic.png">"VAE Basic"</a>
+    by <a href="https://commons.wikimedia.org/wiki/User:EugenioTL">EugenioTL</a>
+    is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
+  </figcaption>
+</figure>
+
+scVI (single-cell Variational Inference) is a Variational Autoencoder (VAE) specifically designed for single-cell RNA-seq data. The model assumes gene counts follow a Zero-Inflated Negative Binomial (ZINB) distribution, which naturally accounts for the sparsity and overdispersion in scRNA-seq data.
+
+Now what the hell does Zero-Inflated Negative Binomial actually mean? Let me break it down piece by piece:
+
+The Negative Binomial part handles the fact that gene counts are overdispersed, meaning the variance in counts is way higher than a simple Poisson distribution would predict. Some cells just randomly express a gene a lot, others barely at all, and a Poisson can't capture that spread. The Negative Binomial has an extra parameter that lets it model this "wilder than expected" variation.
+
+The Zero-Inflated part is exactly what it sounds like: there are way too many zeros in the data.
+Like, embarrassingly many. When you sequence a single cell, you only capture a fraction of its actual RNA molecules, so a gene that IS being expressed might still show up as 0 just because you got unlucky during sequencing. This is called dropout, and it means your data has two kinds of zeros: real zeros (the gene genuinely isn't active) and technical zeros (the gene is active but you missed it). Zero-Inflation adds a separate probability component specifically to model this excess of zeros.
+
+Put it together and you get a distribution that says: "this data has way too many zeros AND the
+non-zero counts are all over the place" which is just... Tuesday in single-cell genomics apparently.
+
+Now before we dive deeper, I just have to say how extremely cool this is. I learned all the raw math behind VAEs in the Deep Learning course at ETH, and seeing that theoretical knowledge perfectly transfer over to solving actual cancer genomics problems is just awesome!
+
+So, how does a VAE actually work?
+
+If you take a standard autoencoder, it simply compresses an input (like a single cell's massive gene expression profile) into a smaller, low-dimensional bottleneck called the latent space, and then tries to decode/reconstruct it back to the original. It maps each cell to a single, fixed coordinate.
+
+The magic of a Variational Autoencoder is that the encoder doesn't map the input to a single point; instead, it maps it to a probability distribution (usually a multivariate Gaussian) within that latent space. So, rather than getting exact coordinates, the network outputs a mean (μ) and a variance (σ). The decoder then samples from this distribution to reconstruct the input.
+
+Why do we do this? By mapping to a distribution instead of a single deterministic point, we force the latent space to be smooth and continuous, which helps the network avoid overfitting the training data.
+
+But introducing randomness creates a massive mathematical issue for training. Neural networks learn via backpropagation (passing along the Gradient/Error from the back to the front), which requires calculating gradients of the loss function trough the layers. But you cannot take the derivative of a random sampling process! If the latent representation z is drawn randomly from our distribution, the gradient completely stops there, and the encoder network can never update its weights.
+
+To solve this, we use something called the reparameterization trick to bypass the difficulty (Learned in [PAI](https://las.inf.ethz.ch/teaching/pai-f24), where I suffered through the math derivation for about 3 hours. Worth it apparently.). Instead of sampling z directly from our learned distribution, we sample a completely independent, standard random noise variable ϵ. Then, we calculate our latent point using a simple equation: z=μ+σ⋅ϵ.
+
+By injecting the randomness ϵ as an external input, we create a clean, deterministic path right through μ and σ. The model can now effortlessly backpropagate the gradients and learn exactly how to structure the biology of our cells in that low-dimensional space!
+
+Now back to scVI! How does this specific VAE architecture actually get rid of that annoying batch effect we talked about earlier? It's actually a brilliant little trick in the network design. When we feed a cell's gene expression data into the model, the encoder compresses it down into our low-dimensional latent space, z. But here is the catch: we also have the "batch ID" (meaning exactly which patient or Friday-afternoon-lab-session the cell came from). Instead of giving this batch ID to the whole network, we only give it to the decoder.
+
+Think about it from the network's artificially "lazy" perspective. The decoder's job is to perfectly reconstruct the original, noisy, batch-affected gene counts, and it gets to use both the latent representation z and the batch ID to do it. Because the decoder is already getting the batch information handed to it on a silver platter, the encoder realizes it doesn't need to waste any of its precious, limited latent space memorizing that technical noise! The model naturally learns to strip all the batch effects out of the encoder, leaving z to capture only the pure, underlying biological state of the cell. It's an incredibly elegant way to force the network to separate real biology from technical artifacts
+
+My strategy was to train the scVI model, extract the learned latent space, and apply Leiden clustering to identify cell types. Leiden clustering is a graph based algorithm that treats cells as nodes, connects similar ones based on their latent coordinates, and then finds the natural communities in that graph.
+
+The project evaluated clustering performance using two metrics: Adjusted Rand Index (ARI) and V-measure score.
+ARI is all about pairings. It looks at every possible pair of cells and asks: "If these two cells belong together in the ground truth, are they also together in your clusters?"
+The "Adjusted" part accounts for chance. If you just randomly assigned cells to clusters, you'd eventually get some right. ARI subtracts that "luck" so that a random assignment gets a score of 0, and a perfect match gets a 1.
+
+V-measure is the "F1-score" of clustering. It balances two things:
+* Homogeneity h: Each of our clusters should only contain one type of cell.
+* Completeness c: All cells of a certain type should be in the same cluster.
+
+## The Grid Search That Didn't Work
+
+My initial attempt achieved a training score of 0.80 but only 0.72 on the test set, sadly pretty below the baseline requirement of 0.79. This drop isn't really surprising in ML terms but considering how easy it was (imo) to pass the first projects baseline I was quite suprised. This was concerning, especially since I'd only have 10 total test submissions.
+
+<img
+  src="/images/ML4G_project/clustering_scvi_plain_leiden.webp"
+  alt="UMAP visualization of the initial scVI + Leiden clustering attempt. Training score 0.80, test score 0.72 — below the 0.79 baseline."
+  style={{ width: "100%" }}
+  className="mx-auto"
+/>
+
+A quick word on what you are actually looking at: UMAP (Uniform Manifold Approximation and Projection (puh, what a long word)) is a dimensionality reduction technique that takes our high dimensional latent space (think thousands of gene dimensions) and squashes it down into a 2D plot you can actually look at. Each dot is a single cell, and cells that are close together have similar gene expression profiles. On the left you see the clusters our model predicted (numbered 0 to 8), and on the right the ground truth cell type labels. In a perfect world these two plots would look identical, with each numbered cluster mapping cleanly onto exactly one cell type. Spoiler: the first attempt was not perfect.
+
+The problem is obvious. While the model easily grouped distinct populations like B cells into their own neat little islands, that massive, smeared blob on the right is a messy, inseparable mix of T cells and NK cells. It also completely failed to draw a clean boundary between the Fibroblasts and Myofibroblasts, perfectly explaining why this naive approach couldn't hit the baseline!
+
+So I launched an extensive grid search over the parameter space:
+- scVI latent space dimensionality
+- Model architecture (depth and width)
+- Leiden clustering parameters (resolution, neighbors)
+
+This improved the training score to 0.88, but test performance only reached 0.75. After burning through 4 submissions without passing the baseline, I realized I needed a fundamentally different approach.
+
+
+<img
+  src="/images/ML4G_project/clustering_scvi_hyperparamteresearch.webp"
+  alt="UMAP after grid search over scVI latent dimensions, network depth/width, and Leiden resolution. Training score improved to 0.88 but test score only reached 0.75."
+  style={{ width: "100%" }}
+  className="mx-auto"
+/>
+
+Looking at the UMAPs after throwing the kitchen sink of hyperparameters at it, things do look superficially a bit better: the individual clusters are noticeably tighter and the different patient samples are decently mixed together. But if you check out the train versus test split in the bottom left, you can literally see the overfitting!! The test cells (in orange) are drifting and forming their own little sub-islands instead of perfectly blending with the training data, completely explaining why the model nailed the training set but crashed to a 0.75 on the test set.
+
+At this point I had burned through 5 out of my 10 total submissions and hadn't beaten the baseline once. Halfway through my submission budget, nothing to show for it. It was pretty clear that whatever I was doing I needed to just stop, put down the keyboard, and actually go read the course slides and documentation properly before touching the code again. Sometimes the most productive thing you can do is admit you have no idea what you are doing.
+
+## The Switch to scANVI
+
+I discovered that the same library offered scANVI (Single-cell ANnotation using Variational Inference), which could leverage the known cell type labels. This was a reference-based method that builds on top of a trained scVI model.
+You basically train a complete scVI model like before and then use those model weights as the initialization. It then treats the training set with the known cell types as known labels and the test set as unlabeled (duh).
+So in the training set a classification head sits directly on top of the latent space z and adds a classification loss to penalize the model if it can't tell a T-cell from a B-cell there. The decoder still does its usual job of reconstructing gene counts, but now the latent space is being pulled to be both biologically clean and cell-type separable at the same time.
+For the test set we then just use the classification prediction from that head as our cluster answer! I think that is pretty neat.
+
+## Results and The Winning Strategy
+
+The scANVI approach yielded dramatic improvements:
+- Training Score: ~0.98
+- Test Score: ~0.84 (finally passing the baseline!)
+
+<img
+  src="/images/ML4G_project/clustering_scanvi.webp"
+  alt="UMAP of the final scANVI clustering result with 5,000 highly variable genes. Training score 0.98, test score 0.871 — first place out of ~35 teams."
+  style={{ width: "100%" }}
+  className="mx-auto"
+/>
+
+Now look at this final beauitful scANVI plot! By leveraging the known labels and pumping up the gene count to 5,000, those stubbornly overlapping Fibroblast and Myofibroblast clusters have finally broken apart into distinct, clean islands. Even that massive, messy T-cell and NK cell blob from the earlier attempts has organized into clearly defined neighborhoods, proving the model actually learned the subtle biological differences instead of just memorizing batch noise
+
+At first glance, a 0.98 training score might suggest overfitting. However, in single-cell data, biologically distinct cell types should be highly separable in a well-learned latent space. The drop to 0.84 on the test set reflects batch effects from unseen patients rather than true overfitting, so the core biological patterns transferred successfully.
+
+But the real breakthrough came from an unconventional choice regarding feature selection. The standard literature recommends keeping 2,000-3,000 highly variable genes to reduce noise. However, I increased this to 5,000 genes.
+
+Now here is where it gets a little interesting. That same 2025 benchmarking paper by Yin et al. in Genome Biology that I mentioned earlier actually looked at this exact question and concluded that while up to 5,000 HVGs can still beat using all genes, the performance gains above 3,000 become pretty marginal for most methods. Their general recommendation is to just stay at or below 3,000. So on paper I was doing something the literature would mildly raise an eyebrow at.
+
+Why did it work anyway? The dataset contained very similar cell types that are notoriously difficult to distinguish:
+- Fibroblasts vs. Myofibroblasts
+- T cells vs. NK cells
+
+Deep learning models like scVI are data hungry but robust to noise. By feeding the model more genes, it captured fine-grained biological signals needed for separation while being robust enough to ignore the added noise from less informative genes. And this is actually consistent with what Yin et al. found too, just buried in the nuance: for fine-grained subtype distinctions specifically, the calculus changes. When your whole problem is telling apart two cell types that are basically biological cousins, you probably do want to hand the model every extra clue it can get.
+So the general recommendation of staying at 3,000 is reasonable for most cases. My case just happened to not be most cases, which I only know in hindsight after it worked. Science!
+
+This final adjustment pushed the score to 0.871, which was enough to take first place out of approximately 35 teams. For reference the second place team finished at 0.862 and third at 0.855, so while the margins look small the gap was actually pretty consistent across the board.
+
+# Part 2: Bulk Deconvolution
+
+While I was struggling to beat the single-cell clustering baseline I simultaneously worked on the second part of the project: Bulk Deconvolution.
+
+Here is the high level idea: We have bulk samples from 32 patients. This means we have some gene measurements but it comes from a mixture of cells, not just one like before. For 12 of them, we know exactly how much of each cell type is inside. For the other 20? We have to guess. Our goal is to predict the proportions of those nine cell types we identified earlier.
+
+## The Data Reality Check
+
+I started with a quick EDA and immediately saw a massive problem. The data is incredibly imbalanced. T-cells are the absolute kings of this tumor microenvironment, making up over 50% of the cells. Meanwhile, rare populations like Endothelial cells and Myofibroblasts are basically background noise, representing less than 2% of the total count.
+
+Trying to predict a 1% population in a high-dimensional space of thousands of genes is a nightmare.
+
+## The Brick Wall
+
+My first thought was to just use standard Linear Methods like Non-negative Least Squares (NNLS). It failed miserably. It couldn't handle the non-linear noise from sequencing depth or the batch effects between patients.
+
+Then I thought: "I'm at ETH studying ML stuff, I'll just throw a Neural Network or a Random Forest at it! Voila"
+Input: Bulk Gene Expression. Output: Proportions.
+But then I hit the brick wall:
+I only had 12 labeled bulk samples to train on. Trying to train a complex model on 12 data points to predict 20 others is nicely said not a good idea. We aren't "learning" anything; we're just overfitting to 12 specific people.
+
+## If you don't have data, make more??
+
+This is where the strategy shifted from "Model Tuning" to "Data Synthesis." If I only have 12 samples, I'll just manufacture 30,000 more. This is called creating Pseudo-bulks (I guess?).
+
+The logic is actually pretty straightforward:
+
+1. I calculated the average cell type proportions from my 12 real patients to find the biological "center."
+2. I used a Dirichlet distribution (a math tool for sampling proportions that sum to 1) to generate 30,000 random "fake" patient compositions.
+3. For each fake patient, I went back to my single cell pool (from problem one) and physically grabbed the gene counts for the required cells. If a fake patient needed 60% T-cells, I'd go grab a bunch of T-cell transcripts and sum them up.
+
+## The Model: LightGBM
+
+With a real dataset finally in hand, the model choice was pretty straightforward: LightGBM. We have tabular data, a reasonable number of features, and only 30,000 samples which is nowhere near large enough to justify the overhead of a neural network. LightGBM is fast, handles this kind of structured data extremely well, and trains super fast on my local GPU. I trained 9 separate regressors, one for each cell type, where the input was the log-normalized expression of the 5,000 most highly variable genes and the output was the estimated proportion for that specific cell type.
+## The "Big Brain" Fix: Biologically Informed Priors
+
+My first attempt with LightGBM got an RMSE of 0.0464. Not bad, but not #1 material.
+The error analysis showed that the model was "hallucinating" rare cells. It treated T-cells (the common ones) and Myofibroblasts (the rare ones) as equally likely to be dominant. This had to simply do with the way I was constructing the Distributions, I asumed every cell type appears an equal amount.
+
+<img
+  src="/images/ML4G_project/deconvolution_calibration_old.webp"
+  alt="Calibration plot for the initial LightGBM deconvolution model before biologically-informed priors. The model over-predicts rare cell types like Myofibroblasts and underestimates T-cell dominance. RMSE 0.0464."
+  style={{ width: "100%" }}
+  className="mx-auto"
+/>
+
+Just look at the T-cell and Myofibroblast subplots in this first attempt! The model is completely terrified to predict high T-cell proportions, dropping all those points way below the red perfect-prediction line! At the same time, it's wildly overestimating the rare Myofibroblasts, perfectly illustrating what happens when your model assumes every cell type is equally likely to appear.
+Turns out if you tell a model that Myofibroblasts are equally likely to dominate a tumor as T-cells, it will believe you. Models are very trusting like that. This was my fault.
+
+So I had to inject some biological reality:
+
+1. The T-Cell Boost: I forced the generator to create synthetic samples that were 80-90% T-cells. This taught the model what a "T-cell explosion" looks like.
+2. Rare Cell Correction: I penalized the model for over-predicting Myofibroblasts. If the model was unsure, it should default to the biological reality that these cells are rare.
+
+<img
+  src="/images/ML4G_project/deconvolution_calibration_final.webp"
+  alt="Calibration plot after injecting biologically-informed priors — T-cell boost and rare cell correction. Predicted T-cell mean 0.511 vs true mean 0.488. Final average RMSE 0.0222."
+  style={{ width: "100%" }}
+  className="mx-auto"
+/>
+
+Now check out the difference after we forced the model to learn some actual biology! The T-cell predictions now beautifully track the red dashed line, and the model has finally stopped hallucinating those rare cells, bringing our overall error down to that winning score.
+
+## The Results
+
+This global calibration check changed everything.
+For T-cells, the true mean was 0.488 and my prediction mean was 0.511. That is pretty close for the dominant class (or close enough for me either way). For the rare Endothelial cells, I hit an RMSE of 0.012.
+
+The final test score? An average RMSE of 0.0222. Far in front of the second team with 0.043 and 3rd with 0.044.
+
+It turns out that while LightGBM is powerful, it's actually the domain knowledge of adjusting the "priors" to match the actual biology I found in my EDA that wins the project.
+
+# So... What Does This Actually Mean for Biology? (The Conclusion)
+
+Okay I will be honest: at some point around hour 6 of staring at UMAP plots I had completely forgotten this was supposed to be about cancer and was just angry that two clusters wouldn't separate. So let's actually zoom out for a second. We didn't just optimize a math problem to beat 34 other teams; we built something that actually tells us about how cancer works.
+
+So, what did the models actually reveal?
+
+First, the struggles we had with the single-cell clustering weren't just algorithm failures: they were biological realities.
+The fact that the naive models completely failed to separate Fibroblasts from Myofibroblasts, or T-cells from NK cells, shows just how functionally intertwined these cells are in the tumor microenvironment (TME).
+By forcing our scANVI model to look at 5,000 genes instead of the standard 2,000, we see that the "stromal fortress" of esophageal adenocarcinoma is so complex that you need a wider biological lens to actually map it. The boundaries between these cell states are subtle, but they are there.
+
+Second, the bulk deconvolution was a reality check on what a tumor actually looks like. Seeing that T cells can dominate around 50% of the microenvironment while structural cells like Endothelial cells and Myofibroblasts hover around 1-2% is wild. It also makes the stromal story from earlier click: you don't need many Fibroblasts and Myofibroblasts to cause problems, a small but persistent population is apparently enough to build an effective wall.
+
+The real world value of the deconvolution pipeline is more modest but still genuinely interesting. Single cell sequencing is expensive and not routinely done at scale. Bulk RNA-seq on the other hand is cheap and standard. With a trained deconvolution model, researchers can take existing bulk samples from large patient cohorts and at least get a rough cellular composition estimate, which is way better than nothing. Tracking whether the T cell fraction goes up or the stromal component shrinks after chemotherapy across hundreds of patients is the kind of population level signal that could actually inform treatment decisions, even if it doesn't give you the full single cell picture.
+
+Getting first place out of 35 brilliant ETH teams and snagging that sweet bonus point for the exam was awesome. When the leaderboard updated and I saw 0.871 at the top I did do a small victory lap around my room that nobody asked for, especially not my downstairs neighbors.
+
+But honestly what stuck with me more than the result is just how fascinating the intersection of advanced ML techniques and actual biology is. The fact that a VAE architecture decision or a prior distribution tweak can translate directly into a better understanding of how a tumor resists chemotherapy is the kind of thing I find genuinely exciting, and I hope this post gave a small taste of that!
+
+10/10 would spend way too much time on this project again. Life is too short not to go outside and
+enjoy the sun in Zurich! ...just kidding, there is no sun in Zurich in winter. There is only rain.
+Like always. I'm going back inside.
+
+If you actually made it to the end here then I wanna thank you a lot for reading this far, you rock!
+If you have any questions about the models, the biology, or the ETH ML for Genomics course in general, feel free to reach out!

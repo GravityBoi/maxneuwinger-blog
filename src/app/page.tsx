@@ -24,21 +24,21 @@ function ProjectCard({ project }: { project: BlogListItem }) {
   return (
     <Link
       href={`/projects/${project.slug}`}
-      className="group block rounded-2xl border border-gray-100 bg-white p-6 shadow-lg transition-transform duration-300 ease-out hover:-translate-y-1 hover:shadow-xl"
+      className="group block rounded-xl border border-gray-100 bg-white p-6 transition-all duration-200 hover:border-gray-200 hover:shadow-md"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-wide text-blue-500">Project</p>
-          <h3 className="mt-2 text-lg font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
+          <p className="text-xs uppercase tracking-wide text-gray-400">Project</p>
+          <h3 className="mt-2 text-base font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
             {project.title}
           </h3>
         </div>
       </div>
-      <p className="mt-4 text-sm text-gray-600 line-clamp-3">{project.description}</p>
+      <p className="mt-3 text-sm text-gray-500 line-clamp-3">{project.description}</p>
       {project.technologies && project.technologies.length > 0 && (
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap gap-1.5">
           {project.technologies.map((tech) => (
-            <span key={tech} className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+            <span key={tech} className="rounded-full bg-gray-50 px-2.5 py-0.5 text-xs font-medium text-gray-500 ring-1 ring-gray-200">
               {tech}
             </span>
           ))}
@@ -50,13 +50,13 @@ function ProjectCard({ project }: { project: BlogListItem }) {
 
 function QuickInfoPanel({ facts }: { facts: QuickFact[] }) {
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-lg">
-      <h3 className="text-base font-semibold text-gray-900">Currently</h3>
-      <ul className="mt-4 space-y-3 text-sm text-gray-600">
+    <div className="rounded-2xl border border-gray-100 bg-white p-6">
+      <h3 className="text-sm font-semibold text-gray-900">Currently</h3>
+      <ul className="mt-4 space-y-3 text-sm">
         {facts.map(({ label, value }) => (
           <li key={label} className="flex items-start justify-between gap-4">
-            <span className="text-gray-500">{label}</span>
-            <span className="text-right font-medium text-gray-800">{value}</span>
+            <span className="text-gray-400">{label}</span>
+            <span className="text-right font-medium text-gray-700">{value}</span>
           </li>
         ))}
       </ul>
@@ -86,7 +86,7 @@ export default async function HomePage() {
             <h1 className="mt-4 text-5xl font-semibold tracking-tight text-gray-900 sm:text-6xl md:text-7xl">
               <span className="font-serif">Max Neuwinger</span>
             </h1>
-            <p className="mt-6 max-w-2xl text-base text-gray-600 sm:text-lg">
+            <p className="mt-6 max-w-2xl text-base text-gray-500 sm:text-lg">
               M.Sc. Computer Science at ETH Zurich focused on machine intelligence.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
