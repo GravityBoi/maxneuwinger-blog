@@ -10,26 +10,39 @@ featured: true
 category: "projects"
 ---
 
+<figure>
+  <img
+    src="/images/ML4G_project/Gemini_title_image.webp"
+    alt="Variational Autoencoder structure diagram"
+    style={{ width: "100%" }}
+    className="mx-auto"
+  />
+  <figcaption style={{ textAlign: "center", fontSize: "0.8em", color: "#666" }}>
+  (AI-generated title image so the introduction doesn't look lonely. Does it make sense? Absolutely not. Was it either this or a blank white void? Absolutely yes. You're welcome.)
+  </figcaption>
+</figure>
+
 # Introduction
 
-In my 3rd Master Semester at ETHZ I took the 6 credits course [Machine Learning for Genomics](https://www.vvz.ethz.ch/Vorlesungsverzeichnis/lerneinheit.view?semkez=2025W&ansicht=ALLE&lerneinheitId=194504&lang=en) as part of my Machine Intelligence Core elective courses.
+In my 3rd Master Semester at ETH Zurich I took the 6 credits course [Machine Learning for Genomics](https://www.vvz.ethz.ch/Vorlesungsverzeichnis/lerneinheit.view?semkez=2025W&ansicht=ALLE&lerneinheitId=194504&lang=en) as part of my Machine Intelligence Core elective courses.
 This course covered Machine learning approaches and biological knowledge for everything related to Genomics, we are talking gene expression prediction, Deconvolution, single RNA-seq, Data Imputation, batch correction, multiomics, Spatial omics, Survival analysis.
 I personally enjoyed the course content quite a lot and I would definitely recommend it! In this project description/blog post I want to detail the second project we had to do in this coure and my solution, so if that sounds interesting in any way stick around.
+As a fun bonus, finishing in first place meant I got to present my solution in front of the entire class! ... which was equal parts terrifying and a great excuse to actually understand what I had done.
 
-But first more about the course: One neat aspect of the course organization was that you were able to get bonus points for the exam by doing weekly quizzes answering questions about a specific paper relating to the lecture.
+But first one more note about the course: One neat aspect of the course organization was that you were able to get bonus points for the exam by doing weekly quizzes answering questions about a specific paper relating to the lecture.
 This was of course purely optional, but the bonus points incentive combined with the fact that the Exam is literally answering paper questions it really made them worth it.
 I of course have read papers before, but taking a course where you read fundamental but mostly brand new research papers was just awesome! Some of these papers were actually quite "bad" and we needed to answer some questions as to "why" they were bad; this is a unique skill I don't think I have to practice usually in other courses in any way.
-I can confidently say that I learned a lot a lot in this course.
+I can confidently say that I learned a lot a lot in this course! (keep in mind though the exam is very difficult)
 
-Anyways, in the course there are 2 big practical projects where one needs to pass the baseline in order to be allowed to take the exam. My solution for the second project got by far the number one place out of around 35 teams and in this post here I want to detail this solution since I think it is super interesting!
+Anyways, in the course there are 2 big practical projects where one needs to pass the baseline in order to even be allowed to take the exam at all. My solution for the second project got by far the number one place out of around 35 teams and in this post here I want to detail this solution since I think it is super interesting!
 
-The project was split up into 2 task:
+The project was split up into 2 seperate tasks:
 1. Single Cell RNA-SEQ clustering
 2. Bulk Deconvolution
 
-Now you might be asking: what the hell does any of this mean? Let me explain (I should be able to after taking the course...)
+Now you might be asking: **what the hell does any of this mean??** Let me explain (I hopefully should be able to after taking the course...)
 
-Let's step back for a second and give some context, because I think it makes the whole thing way more interesting.
+But let's step back for a second and give some context, because I think it makes the whole thing way more interesting (and easier to understand)
 
 We want to treat cancer better. That's the end goal. Cancer is hard partly because it's not one disease, it varies massively between patients, between tumor types, and even between different parts of the same tumor. To actually make progress you need to understand what is happening at the level of individual cells. So the question becomes: how do you actually look inside a cell and figure out what it's doing?
 
@@ -49,14 +62,28 @@ Of course I did go look at the Wikipedia pictures. I should not have done that b
 From Wikipedia I learned it's the eighth-most common cancer globally (had no idea), is 3 times more common in men than in women (I went down a rabbit hole trying to find out why. The scientific consensus seems to be "probably hormones, lifestyle, and Barrett's esophagus prevalence." Incredibly unsatisfying answer. Moving on.) and outcomes generally tend to be fairly poor (late diagnosis).
 `The overall five-year survival rate (5YSR) in the United States is around 15%, and most people die within the first year of diagnosis`
 That sounds horrible.
-The good news is that also according to Wikipedia the most common causes are tobacco, obesity and acid reflux; at least there is some control
+The good news is that the main causes are tobacco, obesity and acid reflux, so at least it's theoretically preventable. Very reassuring information that I'm sure everyone reading this will immediately act on by putting down whatever snack they're eating right now.
 
-(Side note: Actually, what are the most common cancer causes overall? I looked it up! Lung, breast, colorectal, prostate, stomach. The more you know!)
+(Side note: I also looked up the most common cancers overall because apparently I was now just free falling through cancer Wikipedia. Lung, breast, colorectal, prostate, stomach. You're welcome for that fun fact to bring up at your next dinner party.)
 
 The TA's most likely picked this specific cancer because it is apparently known for having a big stromal component, meaning the tumor has a physical wall of structural cells (like the Fibroblasts and Myofibroblasts) to protect themselves from the immune system and chemotherapy.
 
+<figure>
+  <img
+    src="/images/ML4G_project/Tumour_stroma_and_extracellular_matrix_in_hypoxia.svg.webp"
+    alt="Diagram showing tumor stroma and extracellular matrix in hypoxia"
+    style={{ width: "50%" }}
+    className="mx-auto"
+  />
+  <figcaption style={{ textAlign: "center", fontSize: "0.8em", color: "#666" }}>
+    Hypoxia-driven transformation of tumor stroma. Hypoxic cancer cells signal fibroblasts to differentiate into Cancer-Associated Fibroblasts (CAFs), which produce a stiff, aligned extracellular matrix (ECM). Image by Petrova et al. (2018). Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+  </figcaption>
+</figure>
+
+And this illustration from Wikipedia actually shows exactly that: on the left you have a relatively normal situation near the blood vessel, and as you move right into the tumor the oxygen drops, the acidity rises, and the whole environment turns into this dense, chaotic, stiff mesh of Cancer-Associated Fibroblasts (CAFs) and aligned ECM fibers essentially walling the cancer cells in and everything else out. It looks like a fortress and that is more or less exactly what it is (or how I understand it).
+
 I have never ever heard of this before. It sounds kind of cool but also not cool at all at the same time...
-I looked it up and in normal biological cases if you get a cut the local resting fibroblasts wake up, turn into Myofibroblasts and start pumping out collagen to build a scar and heal the wound.
+I looked for an explanation and in normal biological cases if you get a cut the local resting fibroblasts wake up, turn into Myofibroblasts and start pumping out collagen to build a scar and heal the wound.
 However a tumor can constantly pump out signaling proteins that turn normal fibroblasts into Cancer Associated Fibroblasts (CAFs) which build a sort of scar-tissue wall (my current understanding).
 They also can't become "less" since they are not able to undergo apoptosis (programmed cell death).
 
@@ -66,15 +93,38 @@ That's a lot of new words and why those 9? Well they were given to us in the ass
 
 ... and they are relevant because a tumor isn't just a mass of only cancer cells, it is a complex ecosystem: the Tumor Microenvironment. By looking at the specific immune and structural cell types we can see whether the body’s internal defense system is successfully attacking the tumor or if the 'stromal' environment is actually shielding the cancer from chemotherapy.
 
+Here is a fancy illustration from Wikipedia:
+
+<figure>
+  <img
+    src="/images/ML4G_project/Components-of-the-tumor-microenvironment.webp"
+    alt="Diagram showing components of the tumor microenvironment (TME)"
+    style={{ width: "100%" }}
+    className="mx-auto"
+  />
+  <figcaption style={{ textAlign: "center", fontSize: "0.8em", color: "#666" }}>
+    Components of the tumor microenvironment (TME). Created by Piñeiro Fernández, J., et al. (2019) using BioRender.com. Licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+  </figcaption>
+</figure>
+
+So what are we actually looking at here? That big pink blob in the middle is the tumor itself, and it is an absolute madhouse of biological activity.
+CD8 T cells (the bright green ones, nature's assassins) are trying to kill cancer cells, while Regulatory T cells are essentially playing for the other team and telling the immune system to calm down.
+NK cells are doing their best, Myeloid cells have not yet decided whose side they're on, and Stromal cells are quietly constructing what is essentially a medieval fortress wall around the whole situation.
+The gradient bar in the middle shows how oxygen drops and acidity rises as you go deeper into the tumor core, because even the physical chemistry inside a tumor is hostile. The hypoxic dark brown blobs near the center are tumor cells that are suffocating but somehow still surviving, which is deeply unsettling.
+
+Here's the quick cheat sheet for who's who:
+
 | Cell Types | Role in the Tumor |
 |------------|-------------------|
-| T cells, NK cells | The killers. These directly hunt down and destroy cancer cells by recognizing abnormal proteins on their surface. If they are abundant and active, the immune system is actually fighting back. |
-| B cells, Plasmablasts | B cells mature into Plasmablasts which pump out antibodies that tag cancer cells for destruction by other immune cells. |
-| Fibroblasts, Myofibroblasts | Structural cells that produce collagen. In a tumor they get hijacked to build a dense physical wall around the cancer, literally blocking drugs from getting in. |
-| Endothelial cells | Line the walls of blood vessels. Tumors need to grow new vessels to get oxygen and nutrients (angiogenesis), and these cells are the building blocks for exactly that. |
-| Myeloid cells, Mast cells | The wild cards. Depending on the signals they receive they can either ramp up the immune attack or actively suppress it, which tumors are very good at exploiting. |
+| T cells, NK cells | The killers. Nature's assassins, hunting cancer cells. |
+| B cells, Plasmablasts | The taggers. Pump out antibodies to mark cancer cells for destruction. |
+| Fibroblasts, Myofibroblasts | The wall builders. Hijacked by the tumor to physically block drugs from getting in. |
+| Endothelial cells | The plumbers. Build the new blood vessels tumors need to grow. |
+| Myeloid cells, Mast cells |The wild cards. Could be helping, could be hurting. Yes. |
 
-By first clustering the single-cell data, we create a high-resolution 'census' of what these nine cell types actually look like at a molecular level. We then use these digital signatures to deconvolve the bulk samples, allowing us to accurately map out how the entire cellular ecosystem shifts in response to chemotherapy across dozens of different patients.
+I'll be honest: I can now point at all the labeled things and give you a half confident explanation of what each one does, which feels like genuine progress for someone whose entire biology education peaked at "mitochondria is the powerhouse of the cell." The actual interactions between all of these players though? Actual in depth knowledge for any of this? That's where my computer science degree politely excuses itself from the room. But hey, that's exactly why I took this course.
+
+So now by first clustering the single-cell data, we create a high-resolution 'census' of what these nine cell types actually look like at a molecular level. We then use these digital signatures to deconvolve the bulk samples, allowing us to accurately map out how the entire cellular ecosystem shifts in response to chemotherapy across dozens of different patients.
 
 One more thing worth explaining before we dive in: the data comes from 10 different patients, which immediately introduces what is called a batch effect. Even if two cells are biologically identical, the raw RNA measurements from patient A will look slightly different from patient B simply because of technical noise: different days in the lab, slightly different reagent batches, different sequencing depths. For clustering this is a nightmare, because a naive model will just group cells by which patient they came from rather than what cell type they actually are. You end up with 10 patient blobs instead of 9 cell type clusters, which is exactly as useless as it sounds. Removing this technical noise while preserving the real biological signal is one of the core challenges of the whole task.
 
@@ -102,8 +152,7 @@ Additionally, the samples were split by chemotherapy treatment timing: 20,387 pr
 
 ## Initial Approach: Reference-Free scVI
 
-For clustering single-cell RNA-seq data, there are two main paradigms: reference-free methods (which don't use known cell type labels) and reference-based methods (which do).
-Generally reference-based methods perform significantly better, however since passing the baseline in the first project was relatively straightforward, I decided to first go and try a reference-free approach using the `scvi` library.
+For clustering single-cell RNA-seq data, there are two main paradigms: reference-free methods (which don't use known cell type labels) and reference-based methods (which do). If you're thinking "well obviously the one that already knows the answer is going to perform better" - yes, correct, gold star, you are right. But where's the fun in that? Since the first project baseline was relatively easy to beat, I decided to start with the harder reference-free approach using the scvi library and see how far I could get on vibes and latent space alone.
 
 For the actual model choice, I remembered seeing scVI come up in a benchmark comparison table from the lecture slides, so that was honestly the main reason. It's worth noting that a more recent and comprehensive benchmarking study (Yin et al., Genome Biology, 2025) actually identifies scDCC, scAIDE, and FlowSOM as the top performers for single-cell clustering; so if I were approaching this today with that paper in hand, I might have started somewhere different. But I went with what I remembered from the lecture slides, and given that scVI is also very well maintained with a clean API, I can't complain too much about how it turned out.
 
@@ -152,11 +201,11 @@ Now let's move on to the actual model! (Feels like the fourth "now let's move on
 
 ## Understanding scVI Architecture
 
-Let's first take a look at the architecture behind the scVI model since I think it is super cool how it handles the batch effects!
+Let's first take a look at the architecture behind the scVI model since I think it is super cool how it handles the batch effects! (Yes, I just used "super cool" and "batch effects" in the same sentence. Three semesters at ETH and this is who I have become. No notes.)
 
 <figure>
   <img
-    src="/images/ML4G_project/VAE_Basic.png"
+    src="/images/ML4G_project/VAE_Basic.webp"
     alt="Variational Autoencoder structure diagram"
     style={{ width: "100%" }}
     className="mx-auto"
@@ -225,13 +274,9 @@ A quick word on what you are actually looking at: UMAP (Uniform Manifold Approxi
 
 The problem is obvious. While the model easily grouped distinct populations like B cells into their own neat little islands, that massive, smeared blob on the right is a messy, inseparable mix of T cells and NK cells. It also completely failed to draw a clean boundary between the Fibroblasts and Myofibroblasts, perfectly explaining why this naive approach couldn't hit the baseline!
 
-So I launched an extensive grid search over the parameter space:
-- scVI latent space dimensionality
-- Model architecture (depth and width)
-- Leiden clustering parameters (resolution, neighbors)
+So naturally, instead of stopping to question whether my fundamental approach was wrong, I did what any reasonable person would do: I launched an extensive grid search over the latent space dimensionality, model architecture, and Leiden clustering parameters that absolutely definitely did not run for over 10 hours on my PC. (It ran for over 24 hours on my PC.)
 
 This improved the training score to 0.88, but test performance only reached 0.75. After burning through 4 submissions without passing the baseline, I realized I needed a fundamentally different approach.
-
 
 <img
   src="/images/ML4G_project/clustering_scvi_hyperparamteresearch.webp"
@@ -242,7 +287,7 @@ This improved the training score to 0.88, but test performance only reached 0.75
 
 Looking at the UMAPs after throwing the kitchen sink of hyperparameters at it, things do look superficially a bit better: the individual clusters are noticeably tighter and the different patient samples are decently mixed together. But if you check out the train versus test split in the bottom left, you can literally see the overfitting!! The test cells (in orange) are drifting and forming their own little sub-islands instead of perfectly blending with the training data, completely explaining why the model nailed the training set but crashed to a 0.75 on the test set.
 
-At this point I had burned through 5 out of my 10 total submissions and hadn't beaten the baseline once. Halfway through my submission budget, nothing to show for it. It was pretty clear that whatever I was doing I needed to just stop, put down the keyboard, and actually go read the course slides and documentation properly before touching the code again. Sometimes the most productive thing you can do is admit you have no idea what you are doing.
+At this point I had burned through 5 out of my 10 total submissions and hadn't beaten the baseline once. Halfway through my submission budget, nothing to show for it. It was pretty clear that whatever I was doing I needed to just stop, put down the keyboard, and actually go read the course slides and documentation properly before touching the code again. Sometimes the most productive thing you can do is admit you have no idea what you are doing (and I don't).
 
 ## The Switch to scANVI
 
@@ -264,9 +309,9 @@ The scANVI approach yielded dramatic improvements:
   className="mx-auto"
 />
 
-Now look at this final beauitful scANVI plot! By leveraging the known labels and pumping up the gene count to 5,000, those stubbornly overlapping Fibroblast and Myofibroblast clusters have finally broken apart into distinct, clean islands. Even that massive, messy T-cell and NK cell blob from the earlier attempts has organized into clearly defined neighborhoods, proving the model actually learned the subtle biological differences instead of just memorizing batch noise
+Now look at this final beauitful scANVI plot! By leveraging the known labels, those stubbornly overlapping Fibroblast and Myofibroblast clusters have finally broken apart into distinct, clean islands. Even that massive, messy T-cell and NK cell blob from the earlier attempts has organized into clearly defined neighborhoods, proving the model actually learned the subtle biological differences instead of just memorizing batch noise
 
-At first glance, a 0.98 training score might suggest overfitting. However, in single-cell data, biologically distinct cell types should be highly separable in a well-learned latent space. The drop to 0.84 on the test set reflects batch effects from unseen patients rather than true overfitting, so the core biological patterns transferred successfully.
+At first glance, a 0.98 training score triggers every ML instinct in your body to immediately assume the worst. My first reaction was a small internal panic attack. This is either genuinely good or I have somehow managed to completely embarrass myself in front of the entire leaderboard with one of my precious 10 submissions. Turns out it was actually fine! In single-cell data, biologically distinct cell types should be highly separable in a well-learned latent space, so a near-perfect training score is less "suspicious overfitting" and more "the model actually learned real biology." The drop to 0.84 on the test set reflects batch effects from unseen patients rather than true overfitting, which I chose to interpret as a success and not think about too hard.
 
 But the real breakthrough came from an unconventional choice regarding feature selection. The standard literature recommends keeping 2,000-3,000 highly variable genes to reduce noise. However, I increased this to 5,000 genes.
 
@@ -283,7 +328,7 @@ This final adjustment pushed the score to 0.871, which was enough to take first 
 
 # Part 2: Bulk Deconvolution
 
-While I was struggling to beat the single-cell clustering baseline I simultaneously worked on the second part of the project: Bulk Deconvolution.
+While I was busy burning through half my submission budget and achieving absolutely nothing on the clustering task, I simultaneously worked on the second part of the project: Bulk Deconvolution. Multitasking at its finest.
 
 Here is the high level idea: We have bulk samples from 32 patients. This means we have some gene measurements but it comes from a mixture of cells, not just one like before. For 12 of them, we know exactly how much of each cell type is inside. For the other 20? We have to guess. Our goal is to predict the proportions of those nine cell types we identified earlier.
 
@@ -292,19 +337,19 @@ Here is the high level idea: We have bulk samples from 32 patients. This means w
 I started with a quick EDA and immediately saw a massive problem. The data is incredibly imbalanced. T-cells are the absolute kings of this tumor microenvironment, making up over 50% of the cells. Meanwhile, rare populations like Endothelial cells and Myofibroblasts are basically background noise, representing less than 2% of the total count.
 
 Trying to predict a 1% population in a high-dimensional space of thousands of genes is a nightmare.
+But fine, challenges are fun. Allegedly.
 
 ## The Brick Wall
 
 My first thought was to just use standard Linear Methods like Non-negative Least Squares (NNLS). It failed miserably. It couldn't handle the non-linear noise from sequencing depth or the batch effects between patients.
 
-Then I thought: "I'm at ETH studying ML stuff, I'll just throw a Neural Network or a Random Forest at it! Voila"
-Input: Bulk Gene Expression. Output: Proportions.
-But then I hit the brick wall:
-I only had 12 labeled bulk samples to train on. Trying to train a complex model on 12 data points to predict 20 others is nicely said not a good idea. We aren't "learning" anything; we're just overfitting to 12 specific people.
+Then I thought: "I'm at ETH studying ML stuff, I'll just throw a Neural Network or a Random Forest at it! Voila!" Input: Bulk Gene Expression. Output: Proportions. Easy. Done. Genius.
+
+Except then I looked at my training data. 12 samples. Twelve. As in, the number after eleven. Trying to train a complex ML model on 12 data points is less "machine learning" and more "machine memorizing 12 specific people and then confidently hallucinating everything else." We'd learn absolutely nothing generalizable, so just a very expensive portrait of a dozen patients that would completely fall apart the moment it saw anyone new.
 
 ## If you don't have data, make more??
 
-This is where the strategy shifted from "Model Tuning" to "Data Synthesis." If I only have 12 samples, I'll just manufacture 30,000 more. This is called creating Pseudo-bulks (I guess?).
+Fine. 12 samples. That's what we have. So I did the only rational thing a desperate ML student at 2am would do: I just made up 30,000 more. This is apparently called creating Pseudo-bulks, which is a very serious scientific term for "we fabricated the data but in a statistically defensible way."
 
 The logic is actually pretty straightforward:
 
@@ -314,7 +359,10 @@ The logic is actually pretty straightforward:
 
 ## The Model: LightGBM
 
-With a real dataset finally in hand, the model choice was pretty straightforward: LightGBM. We have tabular data, a reasonable number of features, and only 30,000 samples which is nowhere near large enough to justify the overhead of a neural network. LightGBM is fast, handles this kind of structured data extremely well, and trains super fast on my local GPU. I trained 9 separate regressors, one for each cell type, where the input was the log-normalized expression of the 5,000 most highly variable genes and the output was the estimated proportion for that specific cell type.
+With 30,000 freshly fabricated patients in hand, it was model time. And honestly? LightGBM. Every time. I will not be taking questions. We have tabular data, a reasonable number of features, it trains fast, it handles structured data extremely well, and the feature importance plots actually tell you something useful instead of just vibing mysteriously like a neural network. It's the reliable friend who shows up on time, does the job, and doesn't need three GPUs and a week of your life to do it.
+
+I trained 9 separate regressors, one for each cell type, rather than one big model predicting all proportions at once. Why? Because each cell type has its own quirks, its own set of marker genes, and its own relationship with the input features. Forcing a single model to simultaneously figure out "how do I predict T-cells" and "how do I predict rare Myofibroblasts" is asking it to solve two quite different problems at once. Letting each regressor specialize means each one can learn exactly which genes are actually informative for its specific target, without getting distracted by the nine other things it's also supposed to be doing. The input for each was the log-normalized expression of the 5,000 most highly variable genes, and the output was the estimated proportion for that specific cell type.
+
 ## The "Big Brain" Fix: Biologically Informed Priors
 
 My first attempt with LightGBM got an RMSE of 0.0464. Not bad, but not #1 material.
@@ -346,12 +394,11 @@ Now check out the difference after we forced the model to learn some actual biol
 
 ## The Results
 
-This global calibration check changed everything.
-For T-cells, the true mean was 0.488 and my prediction mean was 0.511. That is pretty close for the dominant class (or close enough for me either way). For the rare Endothelial cells, I hit an RMSE of 0.012.
+The global calibration check changed everything. For T-cells, the true mean was 0.488 and my predicted mean was 0.511! Close enough that I'm choosing to call it a win and not think about the 0.023 gap any further. For the rare Endothelial cells, I hit an RMSE of 0.012, which for a cell type that barely shows up in the data felt borderline miraculous.
 
-The final test score? An average RMSE of 0.0222. Far in front of the second team with 0.043 and 3rd with 0.044.
+The final test score? An average RMSE of 0.0222. Second place finished at 0.043, third at 0.044. I'll let those numbers speak for themselves while I pretend to be humble about it.
 
-It turns out that while LightGBM is powerful, it's actually the domain knowledge of adjusting the "priors" to match the actual biology I found in my EDA that wins the project.
+The real takeaway here is a little humbling for my ML ego: LightGBM didn't win this. The hours spent reading about tumor biology, doing EDA, and actually understanding what the data was supposed to represent won this. The model was just the last step. It turns out that knowing your T-cells dominate at 50% and your Myofibroblasts are basically rare guests at a party they weren't really invited to is worth more than any amount of hyperparameter tuning. Who knew that understanding the problem before throwing a gradient boosted tree at it would be the winning strategy. (The biology people. The biology people knew.)
 
 # So... What Does This Actually Mean for Biology? (The Conclusion)
 
@@ -371,9 +418,6 @@ Getting first place out of 35 brilliant ETH teams and snagging that sweet bonus 
 
 But honestly what stuck with me more than the result is just how fascinating the intersection of advanced ML techniques and actual biology is. The fact that a VAE architecture decision or a prior distribution tweak can translate directly into a better understanding of how a tumor resists chemotherapy is the kind of thing I find genuinely exciting, and I hope this post gave a small taste of that!
 
-10/10 would spend way too much time on this project again. Life is too short not to go outside and
-enjoy the sun in Zurich! ...just kidding, there is no sun in Zurich in winter. There is only rain.
-Like always. I'm going back inside.
+10/10, would absolutely spend way too much time on this again. And on that note, now that I've finished writing this up, I'm going to do exactly what I did after submitting the project: close the laptop, head outside, and enjoy the beautiful Zurich sun. Just kidding. There is no sun in Zurich in winter. There is only rain, grey skies, and the quiet existential acceptance that this is just life now. I'm going back inside.
 
-If you actually made it to the end here then I wanna thank you a lot for reading this far, you rock!
-If you have any questions about the models, the biology, or the ETH ML for Genomics course in general, feel free to reach out!
+If you actually made it to the end of this then I genuinely want to thank you! You have the patience of a saint and you absolutely rock. If you have any questions about the models, the biology, or the ETH ML for Genomics course in general, feel free to reach out!
