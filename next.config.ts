@@ -1,9 +1,5 @@
-// next.config.ts
 import { NextConfig } from 'next';
 
-const nextConfig: NextConfig = {
-  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
-  transpilePackages: ['next-mdx-remote'],
-};
+const nextConfig: NextConfig = {};
 
 export default nextConfig;

@@ -1,6 +1,5 @@
 import { Inter } from 'next/font/google'
 import './globals.css'
-import 'highlight.js/styles/github-dark.css'
 import type { Metadata } from 'next'
 import Header from '../components/Header';
 
