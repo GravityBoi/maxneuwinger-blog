@@ -1,13 +1,9 @@
 import Image from 'next/image';
 import { Github, Linkedin, ExternalLink, BookOpen } from 'lucide-react';
 
-// ---------------------------------------------------------------------------
-// Data — replace placeholder URLs and descriptions when ready
-// ---------------------------------------------------------------------------
-
 const PROJECTS = [
   {
-    title: "ML for Genomics — 1st Place Solution",
+    title: "ML for Genomics: 1st Place Solution",
     description:
       "How do you beat 35 teams predicting cancer tumor microenvironments? A deep dive into my VAE-based winning solution for the ETH ML4G course project.",
     tags: ["Genomics", "Machine Learning", "PyTorch"],
@@ -16,7 +12,7 @@ const PROJECTS = [
   {
     title: "How We Won Start Hack 2026",
     description:
-      "A full breakdown of how our team won Start Hack 2026 — the problem, our approach, and what we built under 36 hours.",
+      "A full breakdown of how our team won Start Hack 2026: the problem, our approach, and what we built in 36 hours.",
     tags: ["Hackathon", "AI", "Start Hack"],
     url: "https://open.substack.com/pub/maximusssssssss/p/how-we-won-start-hack-2026",
   },
@@ -39,7 +35,7 @@ const EVENTS = [
   },
   {
     date: "Apr 21, 2026",
-    title: "Jump Trading Talk — ETH VIS",
+    title: "Jump Trading Talk at ETH VIS",
     location: "Zurich, CH",
     description:
       "The ETH computer science student organisation hosted an evening talk with Jump Trading. I am not a quant finance person at all, but I had no idea how deep their ML work goes. Genuinely surprised and fascinated.",
@@ -70,7 +66,7 @@ const EVENTS = [
     title: "Gemini Hackathon Paris",
     location: "Paris, FR",
     description:
-      "Built Sharelock over a weekend and walked away with second place and 30.000 dollars api credits. Paris was a nice backdrop for sleep deprivation.",
+      "Built Sharelock over a weekend and walked away with second place and $30,000 in API credits. Paris was a nice backdrop for sleep deprivation.",
   },
   {
     date: "Feb 19, 2026",
@@ -101,10 +97,6 @@ const EVENTS = [
       "I was not tracking things properly before this. There were more.",
   },
 ];
-
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
 
 function ProjectCard({
   title,
@@ -165,15 +157,10 @@ function EventTimeline() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
-
 export default function HomePage() {
   return (
     <main className="mx-auto max-w-6xl px-6 lg:px-10 pb-28 lg:pb-36 pt-24 lg:pt-32">
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
       <section className="flex flex-col gap-10 sm:flex-row sm:items-start sm:gap-12 lg:gap-16">
         <div className="shrink-0">
           <Image
@@ -264,7 +251,6 @@ export default function HomePage() {
 
       <hr className="my-16 lg:my-20 border-gray-100" />
 
-      {/* ── Projects ─────────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xl lg:text-2xl font-bold text-gray-900">Projects</h2>
         <p className="mt-3 text-base lg:text-[17px] leading-7 text-gray-600 max-w-2xl">
@@ -281,11 +267,9 @@ export default function HomePage() {
 
       <hr className="my-16 lg:my-20 border-gray-100" />
 
-      {/* ── Events ───────────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-xl lg:text-2xl font-bold text-gray-900">Events & Community</h2>
         <p className="mt-3 text-base lg:text-[17px] leading-7 text-gray-600 max-w-2xl">
-          {/* Placeholder justification sentence — replace with real text */}
           Zürich has one of the most vibrant technical communities in Europe, and I try to make the
           most of it. I genuinely love exchanging ideas with others, whether that&apos;s at a hackathon,
           a conference, or an evening meetup. If you&apos;re heading to one of these events too, feel free
