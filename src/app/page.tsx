@@ -20,6 +20,13 @@ const PROJECTS = [
 
 const EVENTS = [
   {
+    date: "May 02, 2026",
+    title: "Lovable Office Visit",
+    location: "Stockholm, SWE",
+    description:
+      "Visited a good friend working at Lovable in Stockholm. Super cool office, cool people, crazy to see how they have grown from the first time I read about this new startup in tdlr.",
+  },
+  {
     date: "Apr 28, 2026",
     title: "Psychedelics Research Lecture",
     location: "Zurich, CH",
