@@ -16,9 +16,30 @@ const PROJECTS = [
     tags: ["Hackathon", "AI", "Start Hack"],
     url: "https://open.substack.com/pub/maximusssssssss/p/how-we-won-start-hack-2026",
   },
+  {
+    title: "How to Make Your Code Go Brrrrr Fast",
+    description:
+      "A write-up on ETH's Advanced Systems Lab (formerly \"How to write fast code\"): what the course is actually about, and how my team squeezed maximum single-core performance out of C/C++ in our optimization project.",
+    tags: ["Performance", "C/C++", "Computer Architecture"],
+    url: "https://open.substack.com/pub/maximusssssssss/p/how-to-make-your-code-go-brrrrr-fast",
+  },
+  {
+    title: "How Meditation Helped Me Solve Math Questions (and Language Is Not AGI)",
+    description:
+      "Why I think language is not the same thing as intelligence: personal observations from years of math homework and Zen practice, backed by fMRI and aphasia research on the brain's language network.",
+    tags: ["AI", "Cognition", "Opinion"],
+    url: "https://open.substack.com/pub/maximusssssssss/p/how-meditation-helped-me-solve-math",
+  },
 ];
 
 const EVENTS = [
+  {
+    date: "June 19, 2026",
+    title: "AI Builders Event (again)",
+    location: "Zurich, CH",
+    description:
+      "AI builders evening at the Google Office again; had some really nice talks as always. Already excited about the next one :)",
+  },
   {
     date: "May 02, 2026",
     title: "Lovable Office Visit",
